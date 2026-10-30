@@ -1,183 +1,658 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#fbf7f2">
-  <title>Complete Your Order | Roadside Bouquet</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    :root{--ink:#352d2c;--muted:#796d69;--rose:#a94f65;--rose-dark:#863b50;--cream:#fbf7f2;--line:#eadfd8;--green:#526a52;--shadow:0 16px 45px #452b2a12}
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--cream);color:var(--ink);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    a{color:inherit}
-    .topbar{padding:18px 22px;border-bottom:1px solid var(--line);background:#fffdfb}
-    .topbar-inner{max-width:1080px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:16px}
-    .brand{font:700 22px Georgia,serif;text-decoration:none;color:var(--rose-dark)}
-    .back{font-size:13px;color:var(--green);font-weight:700;text-decoration:none}
-    main{max-width:1080px;margin:34px auto;padding:0 18px 50px}
-    .intro{margin-bottom:22px} h1{font:700 clamp(28px,4vw,38px) Georgia,serif;margin:0 0 8px} .intro p{margin:0;color:var(--muted);line-height:1.6}
-    .layout{display:grid;grid-template-columns:minmax(0, .92fr) minmax(0,1.08fr);gap:22px;align-items:start}
-    .panel{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:22px}
-    .panel h2{font:700 22px Georgia,serif;margin:0 0 18px}
-    .product-image{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:14px;background:#f3e9e5;display:block}
-    .product-name{font:700 25px Georgia,serif;margin:16px 0 7px}
-    .product-description{font-size:14px;color:var(--muted);line-height:1.65;margin:0}
-    .price-row{display:flex;justify-content:space-between;gap:16px;align-items:center;border-top:1px solid var(--line);margin-top:18px;padding-top:16px;font-size:14px}
-    .price{font-size:23px;font-weight:800;color:var(--rose-dark)}
-    .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
-    .field{display:flex;flex-direction:column;gap:7px;margin-bottom:14px;font-size:13px;font-weight:750}
-    .field.full{grid-column:1/-1}
-    input,textarea{width:100%;font:inherit;font-weight:400;padding:12px;border:1px solid #ded6d1;border-radius:10px;background:#fff;color:var(--ink);outline:none}
-    input:focus,textarea:focus{border-color:var(--rose);box-shadow:0 0 0 3px #a94f651a}
-    textarea{min-height:82px;resize:vertical}
-    .payment-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0 16px}
-    .payment-option{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;gap:9px;align-items:flex-start;cursor:pointer;font-size:13px;font-weight:750}
-    .payment-option input{width:auto;margin-top:2px;accent-color:var(--rose)}
-    .instructions{border:1px solid #e7d7d9;background:#fff8f8;border-radius:12px;padding:13px;margin-bottom:14px}
-    .instructions h3{font-size:14px;margin:0 0 6px} .instructions p{font-size:12px;line-height:1.6;color:var(--muted);margin:0}
-    .qr-placeholder{margin-top:10px;padding:18px;text-align:center;border:1px dashed #d9c4c8;border-radius:10px;color:var(--muted);font-size:12px;background:#fff}
-    .qr-placeholder img{max-width:190px;width:100%;height:auto;display:block;margin:auto;border-radius:8px}
-    .total{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding:17px 0;margin-top:5px;font-weight:800}
-    .total strong{font-size:23px;color:var(--rose-dark)}
-    .submit{width:100%;border:0;border-radius:12px;background:var(--rose);color:white;padding:15px;font-size:14px;font-weight:850;letter-spacing:.03em;cursor:pointer}
-    .submit:hover{background:var(--rose-dark)} .submit:disabled{opacity:.6;cursor:wait}
-    .status{min-height:20px;color:#9a3f4e;font-size:13px;line-height:1.5;margin:10px 0}
-    .notice{padding:12px 14px;border-radius:11px;background:#f3f7f0;color:#496149;font-size:12px;line-height:1.6;margin-bottom:16px}
-    .hidden{display:none!important}
-    @media(max-width:760px){main{margin-top:24px}.layout{grid-template-columns:1fr}.field-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.panel{padding:18px}}
-    @media(max-width:420px){.payment-options{grid-template-columns:1fr}.topbar{padding:15px}.brand{font-size:19px}}
-  </style>
-</head>
-<body>
-  <header class="topbar"><div class="topbar-inner"><a class="brand" href="index.html">Roadside Bouquet</a><a class="back" href="index.html">← Back to bouquets</a></div></header>
-  <main>
-    <div class="intro"><h1>Complete Your Order</h1><p>No account needed. Review your selected bouquet, enter your delivery details, and choose how you would like to pay.</p></div>
-    <div id="pageStatus" class="notice">Loading your selected bouquet…</div>
-    <div class="layout" id="checkoutLayout" hidden>
-      <section class="panel" aria-labelledby="productHeading">
-        <h2 id="productHeading">Your bouquet</h2>
-        <img id="productImage" class="product-image" alt="Selected bouquet">
-        <h3 id="productName" class="product-name"></h3>
-        <p id="productDescription" class="product-description"></p>
-        <div class="price-row"><span>Ready-made bouquet</span><strong id="productPrice" class="price"></strong></div>
-      </section>
-      <section class="panel">
-        <h2>Delivery &amp; payment details</h2>
-        <form id="checkoutForm">
-          <div class="field-grid">
-            <label class="field">Full name<input id="checkoutName" name="full_name" autocomplete="name" maxlength="120" required></label>
-            <label class="field">Mobile number<input id="checkoutPhone" name="phone" type="tel" autocomplete="tel" maxlength="30" placeholder="09XX XXX XXXX" required></label>
-            <label class="field full">Delivery address<textarea id="checkoutAddress" name="address" autocomplete="street-address" maxlength="500" placeholder="House/lot, street, barangay, city" required></textarea></label>
-            <label class="field full">Order notes (optional)<textarea id="checkoutNotes" name="notes" maxlength="500" placeholder="Delivery instructions or special requests"></textarea></label>
-          </div>
-          <div class="field">Choose payment method</div>
-          <div class="payment-options">
-            <label class="payment-option"><input type="radio" name="payment_method" value="gcash" checked> <span>GCash<br><small>Upload payment screenshot</small></span></label>
-            <label class="payment-option"><input type="radio" name="payment_method" value="cod"> <span>Cash on Delivery<br><small>Pay when delivered</small></span></label>
-          </div>
-          <div id="gcashInstructions" class="instructions">
-            <h3>GCash payment</h3><p>Scan the shop's GCash QR code and pay the exact total. Upload a screenshot of your successful payment below. Your order will remain pending until payment is verified.</p>
-            <div id="gcashQrArea" class="qr-placeholder">Shop GCash QR code has not been configured yet.</div>
-            <label class="field" style="margin-top:12px">Upload payment screenshot<input id="paymentReceipt" type="file" accept="image/png,image/jpeg,image/webp"><small style="font-weight:400;color:var(--muted)">JPG, PNG, or WebP; maximum 5 MB.</small></label>
-          </div>
-          <div id="codInstructions" class="instructions hidden"><h3>Cash on Delivery</h3><p>Your order will be submitted for confirmation. Please prepare the exact amount and pay the rider when your bouquet is delivered. No payment screenshot is needed.</p></div>
-          <div class="total"><span>Order total</span><strong id="checkoutTotal">₱0.00</strong></div>
-          <p id="checkoutStatus" class="status" role="status" aria-live="polite"></p>
-          <button id="placeOrderBtn" class="submit" type="submit">SUBMIT ORDER</button>
-        </form>
-      </section>
-    </div>
-  </main>
-<script>
-  // IMPORTANT: use this project's publishable key from Supabase > Settings > API Keys.
-const SUPABASE_URL='https://mfgsuppsxqukymxafmde.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY='sb_publishable_QftaNSdWPgOi7ql2575Dzw_ML5D4xnv';
-  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-  const $ = (id) => document.getElementById(id);
-  const money = (value) => new Intl.NumberFormat("en-PH", {style:"currency", currency:"PHP"}).format(Number(value) || 0);
-  const params = new URLSearchParams(window.location.search);
-  const presetId = params.get("preset");
-  const GCASH_QR_IMAGE_URL = ""; // Add your shop's public GCash QR image URL here.
-  let selectedBouquet = null;
-  let checkoutBusy = false;
-
-  function showError(message) {
-    $("pageStatus").textContent = message;
-    $("pageStatus").classList.remove("hidden");
-    $("checkoutLayout").hidden = true;
-  }
-  async function initializeCheckout() {
-    if (!presetId) { showError("No bouquet was selected. Please return to the bouquet catalog and choose one."); return; }
-    const {data, error} = await supabaseClient.from("prebuilt_bouquets")
-      .select("id,name,description,price,image_url")
-      .eq("id", presetId).eq("is_active", true).maybeSingle();
-    if (error) { console.error("Could not load selected bouquet:", error); showError("We couldn't load this bouquet. Please check the Supabase project URL, publishable key, and prebuilt_bouquets table."); return; }
-    if (!data) { showError("This bouquet is unavailable. Please choose another bouquet from the catalog."); return; }
-    selectedBouquet = data;
-    $("productImage").src = data.image_url || "https://images.unsplash.com/photo-1494972308805-463bc619d34e?auto=format&fit=crop&w=1000&q=80";
-    $("productImage").alt = data.name;
-    $("productName").textContent = data.name;
-    $("productDescription").textContent = data.description || "A thoughtfully arranged bouquet for a special moment.";
-    $("productPrice").textContent = money(data.price);
-    $("checkoutTotal").textContent = money(data.price);
-    $("pageStatus").classList.add("hidden");
-    $("checkoutLayout").hidden = false;
-  }
-  if (GCASH_QR_IMAGE_URL) {
-    const img = document.createElement("img"); img.src = GCASH_QR_IMAGE_URL; img.alt = "Shop GCash QR code"; $("gcashQrArea").replaceChildren(img);
-  }
-  document.querySelectorAll('input[name="payment_method"]').forEach(radio => radio.addEventListener("change", () => {
-    const gcash = document.querySelector('input[name="payment_method"]:checked').value === "gcash";
-    $("gcashInstructions").classList.toggle("hidden", !gcash);
-    $("codInstructions").classList.toggle("hidden", gcash);
-    $("paymentReceipt").required = gcash;
-    $("checkoutStatus").textContent = "";
-  }));
-  $("checkoutForm").addEventListener("submit", async (event) => {
-    event.preventDefault(); if (checkoutBusy || !selectedBouquet) return;
-    const paymentMethod = document.querySelector('input[name="payment_method"]:checked')?.value;
-    const receiptFile = $("paymentReceipt").files?.[0];
-    if (paymentMethod === "gcash") {
-      if (!receiptFile) { $("checkoutStatus").textContent = "Please upload your GCash payment screenshot."; return; }
-      if (!/^image\/(png|jpeg|webp)$/.test(receiptFile.type) || receiptFile.size > 5 * 1024 * 1024) { $("checkoutStatus").textContent = "Upload a JPG, PNG, or WebP image no larger than 5 MB."; return; }
-    }
-    checkoutBusy = true; const button = $("placeOrderBtn"); button.disabled = true; button.textContent = "SUBMITTING ORDER…"; $("checkoutStatus").textContent = "";
-    try {
-      const total = Number(selectedBouquet.price) || 0;
-      const flowerItems = [{product_id:`prebuilt-${selectedBouquet.id}`, name:selectedBouquet.name, price:total, image_url:selectedBouquet.image_url, description:selectedBouquet.description || "Ready-made bouquet", type:"prebuilt_bouquet"}];
-      const {data:designData, error:designError} = await supabaseClient.from("bouquet_designs").insert({
-        user_id:null, main_flowers:flowerItems, filler:null,
-        wrapper:{product_id:"prebuilt-included",name:"Included in pre-built bouquet",price:0},
-        ribbon:{product_id:"prebuilt-included",name:"Included in pre-built bouquet",price:0}, total_price:total
-      }).select("id").single();
-      if (designError) throw designError;
-      const orderId = crypto.randomUUID(); let receiptPath = null;
-      if (paymentMethod === "gcash") {
-        const extension = receiptFile.name.split(".").pop().toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
-        receiptPath = `guest/${orderId}.${extension}`;
-        const {error:uploadError} = await supabaseClient.storage.from("payment-receipts").upload(receiptPath, receiptFile, {contentType:receiptFile.type, upsert:false});
-        if (uploadError) throw uploadError;
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#fbf7f2" />
+    <title>Complete Your Order | Roadside Bouquet</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+      :root {
+        --ink: #352d2c;
+        --muted: #796d69;
+        --rose: #a94f65;
+        --rose-dark: #863b50;
+        --cream: #fbf7f2;
+        --line: #eadfd8;
+        --green: #526a52;
+        --shadow: 0 16px 45px #452b2a12;
       }
-      const {error:orderError} = await supabaseClient.from("bouquet_orders").insert({
-        id:orderId, user_id:null, bouquet_design_id:designData.id,
-        full_name:$("checkoutName").value.trim(), phone:$("checkoutPhone").value.trim(),
-        delivery_address:$("checkoutAddress").value.trim(), notes:$("checkoutNotes").value.trim() || null,
-        payment_method:paymentMethod, payment_status:paymentMethod === "gcash" ? "pending_verification" : "unpaid_cod",
-        order_status:paymentMethod === "gcash" ? "pending_payment" : "pending", total_price:total, receipt_path:receiptPath
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--cream);
+        color: var(--ink);
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+      }
+      a {
+        color: inherit;
+      }
+      .topbar {
+        padding: 18px 22px;
+        border-bottom: 1px solid var(--line);
+        background: #fffdfb;
+      }
+      .topbar-inner {
+        max-width: 1080px;
+        margin: auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+      }
+      .brand {
+        font:
+          700 22px Georgia,
+          serif;
+        text-decoration: none;
+        color: var(--rose-dark);
+      }
+      .back {
+        font-size: 13px;
+        color: var(--green);
+        font-weight: 700;
+        text-decoration: none;
+      }
+      main {
+        max-width: 1080px;
+        margin: 34px auto;
+        padding: 0 18px 50px;
+      }
+      .intro {
+        margin-bottom: 22px;
+      }
+      h1 {
+        font:
+          700 clamp(28px, 4vw, 38px) Georgia,
+          serif;
+        margin: 0 0 8px;
+      }
+      .intro p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+        gap: 22px;
+        align-items: start;
+      }
+      .panel {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        box-shadow: var(--shadow);
+        padding: 22px;
+      }
+      .panel h2 {
+        font:
+          700 22px Georgia,
+          serif;
+        margin: 0 0 18px;
+      }
+      .product-image {
+        width: 100%;
+        aspect-ratio: 4/3;
+        object-fit: cover;
+        border-radius: 14px;
+        background: #f3e9e5;
+        display: block;
+      }
+      .product-name {
+        font:
+          700 25px Georgia,
+          serif;
+        margin: 16px 0 7px;
+      }
+      .product-description {
+        font-size: 14px;
+        color: var(--muted);
+        line-height: 1.65;
+        margin: 0;
+      }
+      .price-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: center;
+        border-top: 1px solid var(--line);
+        margin-top: 18px;
+        padding-top: 16px;
+        font-size: 14px;
+      }
+      .price {
+        font-size: 23px;
+        font-weight: 800;
+        color: var(--rose-dark);
+      }
+      .field-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0 12px;
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        margin-bottom: 14px;
+        font-size: 13px;
+        font-weight: 750;
+      }
+      .field.full {
+        grid-column: 1/-1;
+      }
+      input,
+      textarea {
+        width: 100%;
+        font: inherit;
+        font-weight: 400;
+        padding: 12px;
+        border: 1px solid #ded6d1;
+        border-radius: 10px;
+        background: #fff;
+        color: var(--ink);
+        outline: none;
+      }
+      input:focus,
+      textarea:focus {
+        border-color: var(--rose);
+        box-shadow: 0 0 0 3px #a94f651a;
+      }
+      textarea {
+        min-height: 82px;
+        resize: vertical;
+      }
+      .payment-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin: 8px 0 16px;
+      }
+      .payment-option {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px;
+        display: flex;
+        gap: 9px;
+        align-items: flex-start;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 750;
+      }
+      .payment-option input {
+        width: auto;
+        margin-top: 2px;
+        accent-color: var(--rose);
+      }
+      .instructions {
+        border: 1px solid #e7d7d9;
+        background: #fff8f8;
+        border-radius: 12px;
+        padding: 13px;
+        margin-bottom: 14px;
+      }
+      .instructions h3 {
+        font-size: 14px;
+        margin: 0 0 6px;
+      }
+      .instructions p {
+        font-size: 12px;
+        line-height: 1.6;
+        color: var(--muted);
+        margin: 0;
+      }
+      .qr-placeholder {
+        margin-top: 10px;
+        padding: 18px;
+        text-align: center;
+        border: 1px dashed #d9c4c8;
+        border-radius: 10px;
+        color: var(--muted);
+        font-size: 12px;
+        background: #fff;
+      }
+      .qr-placeholder img {
+        max-width: 190px;
+        width: 100%;
+        height: auto;
+        display: block;
+        margin: auto;
+        border-radius: 8px;
+      }
+      .total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid var(--line);
+        padding: 17px 0;
+        margin-top: 5px;
+        font-weight: 800;
+      }
+      .total strong {
+        font-size: 23px;
+        color: var(--rose-dark);
+      }
+      .submit {
+        width: 100%;
+        border: 0;
+        border-radius: 12px;
+        background: var(--rose);
+        color: white;
+        padding: 15px;
+        font-size: 14px;
+        font-weight: 850;
+        letter-spacing: 0.03em;
+        cursor: pointer;
+      }
+      .submit:hover {
+        background: var(--rose-dark);
+      }
+      .submit:disabled {
+        opacity: 0.6;
+        cursor: wait;
+      }
+      .status {
+        min-height: 20px;
+        color: #9a3f4e;
+        font-size: 13px;
+        line-height: 1.5;
+        margin: 10px 0;
+      }
+      .notice {
+        padding: 12px 14px;
+        border-radius: 11px;
+        background: #f3f7f0;
+        color: #496149;
+        font-size: 12px;
+        line-height: 1.6;
+        margin-bottom: 16px;
+      }
+      .hidden {
+        display: none !important;
+      }
+      @media (max-width: 760px) {
+        main {
+          margin-top: 24px;
+        }
+        .layout {
+          grid-template-columns: 1fr;
+        }
+        .field-grid {
+          grid-template-columns: 1fr;
+        }
+        .field.full {
+          grid-column: auto;
+        }
+        .panel {
+          padding: 18px;
+        }
+      }
+      @media (max-width: 420px) {
+        .payment-options {
+          grid-template-columns: 1fr;
+        }
+        .topbar {
+          padding: 15px;
+        }
+        .brand {
+          font-size: 19px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="index.html">Roadside Bouquet</a
+        ><a class="back" href="index.html">← Back to bouquets</a>
+      </div>
+    </header>
+    <main>
+      <div class="intro">
+        <h1>Complete Your Order</h1>
+        <p>
+          No account needed. Review your selected bouquet, enter your delivery
+          details, and choose how you would like to pay.
+        </p>
+      </div>
+      <div id="pageStatus" class="notice">Loading your selected bouquet…</div>
+      <div class="layout" id="checkoutLayout" hidden>
+        <section class="panel" aria-labelledby="productHeading">
+          <h2 id="productHeading">Your bouquet</h2>
+          <img id="productImage" class="product-image" alt="Selected bouquet" />
+          <h3 id="productName" class="product-name"></h3>
+          <p id="productDescription" class="product-description"></p>
+          <div class="price-row">
+            <span>Ready-made bouquet</span
+            ><strong id="productPrice" class="price"></strong>
+          </div>
+        </section>
+        <section class="panel">
+          <h2>Delivery &amp; payment details</h2>
+          <form id="checkoutForm">
+            <div class="field-grid">
+              <label class="field"
+                >Full name<input
+                  id="checkoutName"
+                  name="full_name"
+                  autocomplete="name"
+                  maxlength="120"
+                  required
+              /></label>
+              <label class="field"
+                >Mobile number<input
+                  id="checkoutPhone"
+                  name="phone"
+                  type="tel"
+                  autocomplete="tel"
+                  maxlength="30"
+                  placeholder="09XX XXX XXXX"
+                  required
+              /></label>
+              <label class="field full"
+                >Delivery address<textarea
+                  id="checkoutAddress"
+                  name="address"
+                  autocomplete="street-address"
+                  maxlength="500"
+                  placeholder="House/lot, street, barangay, city"
+                  required
+                ></textarea>
+              </label>
+              <label class="field full"
+                >Order notes (optional)<textarea
+                  id="checkoutNotes"
+                  name="notes"
+                  maxlength="500"
+                  placeholder="Delivery instructions or special requests"
+                ></textarea>
+              </label>
+            </div>
+            <div class="field">Choose payment method</div>
+            <div class="payment-options">
+              <label class="payment-option"
+                ><input
+                  type="radio"
+                  name="payment_method"
+                  value="gcash"
+                  checked
+                />
+                <span
+                  >GCash<br /><small>Upload payment screenshot</small></span
+                ></label
+              >
+              <label class="payment-option"
+                ><input type="radio" name="payment_method" value="cod" />
+                <span
+                  >Cash on Delivery<br /><small>Pay when delivered</small></span
+                ></label
+              >
+            </div>
+            <div id="gcashInstructions" class="instructions">
+              <h3>GCash payment</h3>
+              <p>
+                Scan the shop's GCash QR code and pay the exact total. Upload a
+                screenshot of your successful payment below. Your order will
+                remain pending until payment is verified.
+              </p>
+              <div id="gcashQrArea" class="qr-placeholder">
+                Shop GCash QR code has not been configured yet.
+              </div>
+              <label class="field" style="margin-top: 12px"
+                >Upload payment screenshot<input
+                  id="paymentReceipt"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                /><small style="font-weight: 400; color: var(--muted)"
+                  >JPG, PNG, or WebP; maximum 5 MB.</small
+                ></label
+              >
+            </div>
+            <div id="codInstructions" class="instructions hidden">
+              <h3>Cash on Delivery</h3>
+              <p>
+                Your order will be submitted for confirmation. Please prepare
+                the exact amount and pay the rider when your bouquet is
+                delivered. No payment screenshot is needed.
+              </p>
+            </div>
+            <div class="total">
+              <span>Order total</span><strong id="checkoutTotal">₱0.00</strong>
+            </div>
+            <p
+              id="checkoutStatus"
+              class="status"
+              role="status"
+              aria-live="polite"
+            ></p>
+            <button id="placeOrderBtn" class="submit" type="submit">
+              SUBMIT ORDER
+            </button>
+          </form>
+        </section>
+      </div>
+    </main>
+    <script>
+      // IMPORTANT: use this project's publishable key from Supabase > Settings > API Keys.
+      const SUPABASE_URL = "https://mfgsuppsxqukymxafmde.supabase.co";
+      const SUPABASE_PUBLISHABLE_KEY =
+        "sb_publishable_QftaNSdWPgOi7ql2575Dzw_ML5D4xnv";
+      const supabaseClient = window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_PUBLISHABLE_KEY,
+      );
+      const $ = (id) => document.getElementById(id);
+      const money = (value) =>
+        new Intl.NumberFormat("en-PH", {
+          style: "currency",
+          currency: "PHP",
+        }).format(Number(value) || 0);
+      const params = new URLSearchParams(window.location.search);
+      const presetId = params.get("preset");
+      const GCASH_QR_IMAGE_URL = ""; // Add your shop's public GCash QR image URL here.
+      let selectedBouquet = null;
+      let checkoutBusy = false;
+
+      function showError(message) {
+        $("pageStatus").textContent = message;
+        $("pageStatus").classList.remove("hidden");
+        $("checkoutLayout").hidden = true;
+      }
+      async function initializeCheckout() {
+        if (!presetId) {
+          showError(
+            "No bouquet was selected. Please return to the bouquet catalog and choose one.",
+          );
+          return;
+        }
+        const { data, error } = await supabaseClient
+          .from("prebuilt_bouquets")
+          .select("id,name,description,price,image_url")
+          .eq("id", presetId)
+          .eq("is_active", true)
+          .maybeSingle();
+        if (error) {
+          console.error("Could not load selected bouquet:", error);
+          showError(
+            "We couldn't load this bouquet. Please check the Supabase project URL, publishable key, and prebuilt_bouquets table.",
+          );
+          return;
+        }
+        if (!data) {
+          showError(
+            "This bouquet is unavailable. Please choose another bouquet from the catalog.",
+          );
+          return;
+        }
+        selectedBouquet = data;
+        $("productImage").src =
+          data.image_url ||
+          "https://images.unsplash.com/photo-1494972308805-463bc619d34e?auto=format&fit=crop&w=1000&q=80";
+        $("productImage").alt = data.name;
+        $("productName").textContent = data.name;
+        $("productDescription").textContent =
+          data.description ||
+          "A thoughtfully arranged bouquet for a special moment.";
+        $("productPrice").textContent = money(data.price);
+        $("checkoutTotal").textContent = money(data.price);
+        $("pageStatus").classList.add("hidden");
+        $("checkoutLayout").hidden = false;
+      }
+      if (GCASH_QR_IMAGE_URL) {
+        const img = document.createElement("img");
+        img.src = GCASH_QR_IMAGE_URL;
+        img.alt = "Shop GCash QR code";
+        $("gcashQrArea").replaceChildren(img);
+      }
+      document
+        .querySelectorAll('input[name="payment_method"]')
+        .forEach((radio) =>
+          radio.addEventListener("change", () => {
+            const gcash =
+              document.querySelector('input[name="payment_method"]:checked')
+                .value === "gcash";
+            $("gcashInstructions").classList.toggle("hidden", !gcash);
+            $("codInstructions").classList.toggle("hidden", gcash);
+            $("paymentReceipt").required = gcash;
+            $("checkoutStatus").textContent = "";
+          }),
+        );
+      $("checkoutForm").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (checkoutBusy || !selectedBouquet) return;
+        const paymentMethod = document.querySelector(
+          'input[name="payment_method"]:checked',
+        )?.value;
+        const receiptFile = $("paymentReceipt").files?.[0];
+        if (paymentMethod === "gcash") {
+          if (!receiptFile) {
+            $("checkoutStatus").textContent =
+              "Please upload your GCash payment screenshot.";
+            return;
+          }
+          if (
+            !/^image\/(png|jpeg|webp)$/.test(receiptFile.type) ||
+            receiptFile.size > 5 * 1024 * 1024
+          ) {
+            $("checkoutStatus").textContent =
+              "Upload a JPG, PNG, or WebP image no larger than 5 MB.";
+            return;
+          }
+        }
+        checkoutBusy = true;
+        const button = $("placeOrderBtn");
+        button.disabled = true;
+        button.textContent = "SUBMITTING ORDER…";
+        $("checkoutStatus").textContent = "";
+        try {
+          const total = Number(selectedBouquet.price) || 0;
+          const flowerItems = [
+            {
+              product_id: `prebuilt-${selectedBouquet.id}`,
+              name: selectedBouquet.name,
+              price: total,
+              image_url: selectedBouquet.image_url,
+              description: selectedBouquet.description || "Ready-made bouquet",
+              type: "prebuilt_bouquet",
+            },
+          ];
+          const { data: designData, error: designError } = await supabaseClient
+            .from("bouquet_designs")
+            .insert({
+              user_id: null,
+              main_flowers: flowerItems,
+              filler: null,
+              wrapper: {
+                product_id: "prebuilt-included",
+                name: "Included in pre-built bouquet",
+                price: 0,
+              },
+              ribbon: {
+                product_id: "prebuilt-included",
+                name: "Included in pre-built bouquet",
+                price: 0,
+              },
+              total_price: total,
+            })
+            .select("id")
+            .single();
+          if (designError) throw designError;
+          const orderId = crypto.randomUUID();
+          let receiptPath = null;
+          if (paymentMethod === "gcash") {
+            const extension =
+              receiptFile.name
+                .split(".")
+                .pop()
+                .toLowerCase()
+                .replace(/[^a-z0-9]/g, "") || "jpg";
+            receiptPath = `guest/${orderId}.${extension}`;
+            const { error: uploadError } = await supabaseClient.storage
+              .from("payment-receipts")
+              .upload(receiptPath, receiptFile, {
+                contentType: receiptFile.type,
+                upsert: false,
+              });
+            if (uploadError) throw uploadError;
+          }
+          const { error: orderError } = await supabaseClient
+            .from("bouquet_orders")
+            .insert({
+              id: orderId,
+              user_id: null,
+              bouquet_design_id: designData.id,
+              full_name: $("checkoutName").value.trim(),
+              phone: $("checkoutPhone").value.trim(),
+              delivery_address: $("checkoutAddress").value.trim(),
+              notes: $("checkoutNotes").value.trim() || null,
+              payment_method: paymentMethod,
+              payment_status:
+                paymentMethod === "gcash"
+                  ? "pending_verification"
+                  : "unpaid_cod",
+              order_status:
+                paymentMethod === "gcash" ? "pending_payment" : "pending",
+              total_price: total,
+              receipt_path: receiptPath,
+            });
+          if (orderError) throw orderError;
+          $("checkoutForm").reset();
+          $("gcashInstructions").classList.remove("hidden");
+          $("codInstructions").classList.add("hidden");
+          $("paymentReceipt").required = true;
+          $("checkoutStatus").style.color = "#315d3a";
+          $("checkoutStatus").textContent =
+            paymentMethod === "gcash"
+              ? "Order submitted! Your GCash payment is pending verification."
+              : "Order submitted! Please pay upon delivery.";
+          button.textContent = "ORDER SUBMITTED";
+        } catch (error) {
+          console.error("Checkout failed:", error);
+          $("checkoutStatus").style.color = "#9a3f4e";
+          $("checkoutStatus").textContent =
+            error.message ||
+            "Could not submit the order. Check your Supabase tables, storage bucket, and RLS policies.";
+        } finally {
+          checkoutBusy = false;
+          if (button.textContent !== "ORDER SUBMITTED") {
+            button.disabled = false;
+            button.textContent = "SUBMIT ORDER";
+          }
+        }
       });
-      if (orderError) throw orderError;
-      $("checkoutForm").reset();
-      $("gcashInstructions").classList.remove("hidden"); $("codInstructions").classList.add("hidden"); $("paymentReceipt").required = true;
-      $("checkoutStatus").style.color = "#315d3a";
-      $("checkoutStatus").textContent = paymentMethod === "gcash" ? "Order submitted! Your GCash payment is pending verification." : "Order submitted! Please pay upon delivery.";
-      button.textContent = "ORDER SUBMITTED";
-    } catch(error) {
-      console.error("Checkout failed:", error); $("checkoutStatus").style.color = "#9a3f4e";
-      $("checkoutStatus").textContent = error.message || "Could not submit the order. Check your Supabase tables, storage bucket, and RLS policies.";
-    } finally { checkoutBusy = false; if (button.textContent !== "ORDER SUBMITTED") { button.disabled = false; button.textContent = "SUBMIT ORDER"; } }
-  });
-  initializeCheckout().catch(error => { console.error(error); showError(error.message || "Could not initialize checkout."); });
-</script>
-</body>
+      initializeCheckout().catch((error) => {
+        console.error(error);
+        showError(error.message || "Could not initialize checkout.");
+      });
+    </script>
+  </body>
 </html>

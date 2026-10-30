@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fbf7f2">
+  <title>Complete Your Order | Roadside Bouquet</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{--ink:#352d2c;--muted:#796d69;--rose:#a94f65;--rose-dark:#863b50;--cream:#fbf7f2;--line:#eadfd8;--green:#526a52;--shadow:0 16px 45px #452b2a12}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--cream);color:var(--ink);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    a{color:inherit}
+    .topbar{padding:18px 22px;border-bottom:1px solid var(--line);background:#fffdfb}
+    .topbar-inner{max-width:1080px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:16px}
+    .brand{font:700 22px Georgia,serif;text-decoration:none;color:var(--rose-dark)}
+    .back{font-size:13px;color:var(--green);font-weight:700;text-decoration:none}
+    main{max-width:1080px;margin:34px auto;padding:0 18px 50px}
+    .intro{margin-bottom:22px}h1{font:700 clamp(28px,4vw,38px) Georgia,serif;margin:0 0 8px}.intro p{margin:0;color:var(--muted);line-height:1.6}
+    .notice{padding:12px 14px;border-radius:11px;background:#f3f7f0;color:#496149;font-size:12px;line-height:1.6;margin-bottom:16px}
+    .layout{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:22px;align-items:start}
+    .panel{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:22px}
+    .panel h2{font:700 22px Georgia,serif;margin:0 0 18px}
+    .product-image{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:14px;background:#f3e9e5;display:block}
+    .product-name{font:700 25px Georgia,serif;margin:16px 0 7px}
+    .product-description{font-size:14px;color:var(--muted);line-height:1.65;margin:0}
+    .price-row{display:flex;justify-content:space-between;gap:16px;align-items:center;border-top:1px solid var(--line);margin-top:18px;padding-top:16px;font-size:14px}
+    .price{font-size:23px;font-weight:800;color:var(--rose-dark)}
+    .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+    .field{display:flex;flex-direction:column;gap:7px;margin-bottom:14px;font-size:13px;font-weight:750}
+    .field.full{grid-column:1/-1}
+    input,textarea{width:100%;font:inherit;font-weight:400;padding:12px;border:1px solid #ded6d1;border-radius:10px;background:#fff;color:var(--ink);outline:none}
+    input:focus,textarea:focus{border-color:var(--rose);box-shadow:0 0 0 3px #a94f651a}
+    textarea{min-height:82px;resize:vertical}
+    .auth-box{border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:20px;background:#fffdfb}
+    .auth-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+    .auth-head h3{margin:0;font:700 18px Georgia,serif}
+    .auth-tabs{display:flex;gap:6px;background:#f5eeea;border-radius:10px;padding:4px}
+    .auth-tabs button{border:0;background:transparent;padding:8px 11px;border-radius:7px;font-size:12px;font-weight:800;color:var(--muted);cursor:pointer}
+    .auth-tabs button.active{background:#fff;color:var(--rose-dark);box-shadow:0 1px 4px #00000012}
+    .auth-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+    .auth-grid .full{grid-column:1/-1}
+    .auth-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .small-btn{border:0;border-radius:9px;background:var(--rose);color:#fff;padding:11px 16px;font-size:12px;font-weight:850;cursor:pointer}
+    .small-btn:disabled{opacity:.6;cursor:wait}
+    .auth-message{font-size:12px;line-height:1.5;color:var(--rose-dark);margin:10px 0 0}
+    .signed-in{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#f3f7f0;color:#496149;border-radius:10px;padding:12px;font-size:12px;line-height:1.5}
+    .text-btn{border:0;background:none;color:var(--rose-dark);font-size:12px;font-weight:800;text-decoration:underline;cursor:pointer}
+    .payment-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0 16px}
+    .payment-option{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;gap:9px;align-items:flex-start;cursor:pointer;font-size:13px;font-weight:750}
+    .payment-option input{width:auto;margin-top:2px;accent-color:var(--rose)}
+    .instructions{border:1px solid #e7d7d9;background:#fff8f8;border-radius:12px;padding:13px;margin-bottom:14px}
+    .instructions h3{font-size:14px;margin:0 0 6px}.instructions p{font-size:12px;line-height:1.6;color:var(--muted);margin:0}
+    .qr-placeholder{margin-top:10px;padding:18px;text-align:center;border:1px dashed #d9c4c8;border-radius:10px;color:var(--muted);font-size:12px;background:#fff}
+    .qr-placeholder img{max-width:190px;width:100%;height:auto;display:block;margin:auto;border-radius:8px}
+    .total{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding:17px 0;margin-top:5px;font-weight:800}
+    .total strong{font-size:23px;color:var(--rose-dark)}
+    .submit{width:100%;border:0;border-radius:12px;background:var(--rose);color:white;padding:15px;font-size:14px;font-weight:850;letter-spacing:.03em;cursor:pointer}
+    .submit:hover{background:var(--rose-dark)}.submit:disabled{opacity:.6;cursor:wait}
+    .status{min-height:20px;color:#9a3f4e;font-size:13px;line-height:1.5;margin:10px 0}
+    .hidden{display:none!important}
+    @media(max-width:760px){main{margin-top:24px}.layout{grid-template-columns:1fr}.field-grid,.auth-grid{grid-template-columns:1fr}.field.full,.auth-grid .full{grid-column:auto}.panel{padding:18px}}
+    @media(max-width:420px){.payment-options{grid-template-columns:1fr}.topbar{padding:15px}.brand{font-size:19px}.auth-head{align-items:flex-start;flex-direction:column}}
+  </style>
+</head>
+<body>
+<header class="topbar"><div class="topbar-inner"><a class="brand" href="index.html">Roadside Bouquet</a><a class="back" href="index.html">← Back to bouquets</a></div></header>
+<main>
+  <div class="intro"><h1>Complete Your Order</h1><p>Sign in or create an account, review your selected bouquet, and enter your delivery details.</p></div>
+  <div id="pageStatus" class="notice">Loading your selected bouquet…</div>
+  <div class="layout" id="checkoutLayout" hidden>
+    <section class="panel" aria-labelledby="productHeading">
+      <h2 id="productHeading">Your bouquet</h2>
+      <img id="productImage" class="product-image" alt="Selected bouquet">
+      <h3 id="productName" class="product-name"></h3>
+      <p id="productDescription" class="product-description"></p>
+      <div class="price-row"><span>Ready-made bouquet</span><strong id="productPrice" class="price"></strong></div>
+    </section>
+    <section class="panel">
+      <h2>Delivery &amp; payment details</h2>
+
+      <div class="auth-box" id="authBox">
+        <div id="authSignedOut">
+          <div class="auth-head">
+            <h3 id="authTitle">Customer login</h3>
+            <div class="auth-tabs">
+              <button type="button" id="loginTab" class="active">LOGIN</button>
+              <button type="button" id="signupTab">CREATE ACCOUNT</button>
+            </div>
+          </div>
+          <form id="authForm">
+            <div class="auth-grid">
+              <label class="field full hidden" id="authNameWrap">Full name
+                <input id="authName" type="text" autocomplete="name" maxlength="120" placeholder="Your full name">
+              </label>
+              <label class="field full">Email address
+                <input id="authEmail" type="email" autocomplete="email" maxlength="254" required placeholder="you@example.com">
+              </label>
+              <label class="field full">Password
+                <input id="authPassword" type="password" autocomplete="current-password" minlength="6" required placeholder="At least 6 characters">
+              </label>
+            </div>
+            <div class="auth-actions"><button class="small-btn" id="authSubmit" type="submit">LOGIN</button><button class="text-btn hidden" type="button" id="forgotPassword">Forgot password?</button></div>
+            <p id="authMessage" class="auth-message" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+        <div id="authSignedIn" class="signed-in hidden">
+          <span>Signed in as <strong id="signedInEmail"></strong></span>
+          <button class="text-btn" type="button" id="signOutBtn">Sign out</button>
+        </div>
+      </div>
+
+      <form id="checkoutForm">
+        <div class="field-grid">
+          <label class="field">Full name<input id="checkoutName" name="full_name" autocomplete="name" maxlength="120" required></label>
+          <label class="field">Mobile number<input id="checkoutPhone" name="phone" type="tel" autocomplete="tel" maxlength="30" placeholder="09XX XXX XXXX" required></label>
+          <label class="field full">Delivery address<textarea id="checkoutAddress" name="address" autocomplete="street-address" maxlength="500" placeholder="House/lot, street, barangay, city" required></textarea></label>
+          <label class="field full">Order notes (optional)<textarea id="checkoutNotes" name="notes" maxlength="500" placeholder="Delivery instructions or special requests"></textarea></label>
+        </div>
+        <div class="field">Choose payment method</div>
+        <div class="payment-options">
+          <label class="payment-option"><input type="radio" name="payment_method" value="gcash" checked> <span>GCash<br><small>Upload payment screenshot</small></span></label>
+          <label class="payment-option"><input type="radio" name="payment_method" value="cod"> <span>Cash on Delivery<br><small>Pay when delivered</small></span></label>
+        </div>
+        <div id="gcashInstructions" class="instructions">
+          <h3>GCash payment</h3><p>Scan the shop's GCash QR code and pay the exact total. Upload a screenshot of your successful payment below. Your order will remain pending until payment is verified.</p>
+          <div id="gcashQrArea" class="qr-placeholder">Shop GCash QR code has not been configured yet.</div>
+          <label class="field" style="margin-top:12px">Upload payment screenshot<input id="paymentReceipt" type="file" accept="image/png,image/jpeg,image/webp"><small style="font-weight:400;color:var(--muted)">JPG, PNG, or WebP; maximum 5 MB.</small></label>
+        </div>
+        <div id="codInstructions" class="instructions hidden"><h3>Cash on Delivery</h3><p>Your order will be submitted for confirmation. Please prepare the exact amount and pay the rider when your bouquet is delivered. No payment screenshot is needed.</p></div>
+        <div class="total"><span>Order total</span><strong id="checkoutTotal">₱0.00</strong></div>
+        <p id="checkoutStatus" class="status" role="status" aria-live="polite"></p>
+        <button id="placeOrderBtn" class="submit" type="submit" disabled>LOGIN TO PLACE ORDER</button>
+      </form>
+    </section>
+  </div>
+</main>
+<script>
+const SUPABASE_URL = 'https://mfgsuppsxqukymxafmde.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_QftaNSdWPgOi7ql2575Dzw_ML5D4xnv';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+const $ = id => document.getElementById(id);
+const money = value => new Intl.NumberFormat('en-PH',{style:'currency',currency:'PHP'}).format(Number(value)||0);
+const params = new URLSearchParams(window.location.search);
+const presetId = params.get('preset');
+const GCASH_QR_IMAGE_URL = ''; // Paste your public GCash QR image URL here.
+let selectedBouquet = null;
+let currentUser = null;
+let checkoutBusy = false;
+let authMode = 'login';
+
+function showError(message) {
+  $('pageStatus').textContent = message;
+  $('pageStatus').classList.remove('hidden');
+  $('checkoutLayout').hidden = true;
+}
+function setAuthMode(mode) {
+  authMode = mode;
+  const signup = mode === 'signup';
+  $('authTitle').textContent = signup ? 'Create your account' : 'Customer login';
+  $('authSubmit').textContent = signup ? 'CREATE ACCOUNT' : 'LOGIN';
+  $('loginTab').classList.toggle('active', !signup);
+  $('signupTab').classList.toggle('active', signup);
+  $('authNameWrap').classList.toggle('hidden', !signup);
+  $('authName').required = signup;
+  $('authPassword').autocomplete = signup ? 'new-password' : 'current-password';
+  $('forgotPassword').classList.toggle('hidden', signup);
+  $('authMessage').textContent = '';
+}
+function updateAuthUI(user) {
+  currentUser = user || null;
+  const signedIn = !!currentUser;
+  $('authSignedOut').classList.toggle('hidden', signedIn);
+  $('authSignedIn').classList.toggle('hidden', !signedIn);
+  $('signedInEmail').textContent = currentUser?.email || 'Customer';
+  $('placeOrderBtn').disabled = !signedIn || checkoutBusy || !selectedBouquet;
+  $('placeOrderBtn').textContent = signedIn ? 'SUBMIT ORDER' : 'LOGIN TO PLACE ORDER';
+  if (signedIn) {
+    const metadataName = currentUser.user_metadata?.full_name || '';
+    if (!$('checkoutName').value.trim()) $('checkoutName').value = metadataName;
+  }
+}
+async function initializeCheckout() {
+  if (!presetId) {
+    showError('No bouquet was selected. Please return to the bouquet catalog and choose one.');
+    return;
+  }
+  const {data,error} = await supabaseClient.from('prebuilt_bouquets')
+    .select('id,name,description,price,image_url')
+    .eq('id',presetId).eq('is_active',true).maybeSingle();
+  if (error) {
+    console.error('Could not load selected bouquet:',error);
+    showError("We couldn't load this bouquet. Please check the Supabase project URL, publishable key, and prebuilt_bouquets table.");
+    return;
+  }
+  if (!data) {
+    showError('This bouquet is unavailable. Please choose another bouquet from the catalog.');
+    return;
+  }
+  selectedBouquet = data;
+  $('productImage').src = data.image_url || 'https://images.unsplash.com/photo-1494972308805-463bc619d34e?auto=format&fit=crop&w=1000&q=80';
+  $('productImage').alt = data.name;
+  $('productName').textContent = data.name;
+  $('productDescription').textContent = data.description || 'A thoughtfully arranged bouquet for a special moment.';
+  $('productPrice').textContent = money(data.price);
+  $('checkoutTotal').textContent = money(data.price);
+  $('pageStatus').classList.add('hidden');
+  $('checkoutLayout').hidden = false;
+  $('placeOrderBtn').disabled = !currentUser;
+}
+if (GCASH_QR_IMAGE_URL) {
+  const img = document.createElement('img');
+  img.src = GCASH_QR_IMAGE_URL;
+  img.alt = 'Shop GCash QR code';
+  $('gcashQrArea').replaceChildren(img);
+}
+
+$('loginTab').addEventListener('click',()=>setAuthMode('login'));
+$('signupTab').addEventListener('click',()=>setAuthMode('signup'));
+$('authForm').addEventListener('submit',async event=>{
+  event.preventDefault();
+  const button = $('authSubmit');
+  button.disabled = true;
+  $('authMessage').textContent = '';
+  try {
+    const email = $('authEmail').value.trim();
+    const password = $('authPassword').value;
+    if (authMode === 'signup') {
+      const fullName = $('authName').value.trim();
+      const {data,error} = await supabaseClient.auth.signUp({
+        email,password,options:{data:{full_name:fullName}}
+      });
+      if (error) throw error;
+      if (data.session && data.user) {
+        updateAuthUI(data.user);
+        $('authMessage').style.color = '#496149';
+        $('authMessage').textContent = 'Account created and signed in. You can now place your order.';
+      } else {
+        $('authMessage').style.color = '#496149';
+        $('authMessage').textContent = 'Account created. Please check your email for the confirmation link, then return here and log in.';
+        setAuthMode('login');
+      }
+    } else {
+      const {data,error} = await supabaseClient.auth.signInWithPassword({email,password});
+      if (error) throw error;
+      updateAuthUI(data.user);
+      $('authMessage').style.color = '#496149';
+      $('authMessage').textContent = 'Login successful.';
+    }
+  } catch(error) {
+    console.error('Authentication failed:',error);
+    $('authMessage').style.color = '#9a3f4e';
+    $('authMessage').textContent = error.message || 'Could not authenticate. Please try again.';
+  } finally {
+    button.disabled = false;
+  }
+});
+$('forgotPassword').addEventListener('click',async()=>{
+  const email = $('authEmail').value.trim();
+  if (!email) {
+    $('authMessage').textContent = 'Enter your email address first.';
+    return;
+  }
+  const {error} = await supabaseClient.auth.resetPasswordForEmail(email,{
+    redirectTo:window.location.origin + window.location.pathname
+  });
+  $('authMessage').style.color = error ? '#9a3f4e' : '#496149';
+  $('authMessage').textContent = error ? error.message : 'Password reset email sent. Please check your inbox.';
+});
+$('signOutBtn').addEventListener('click',async()=>{
+  const {error} = await supabaseClient.auth.signOut();
+  if (error) {
+    $('checkoutStatus').textContent = error.message;
+    return;
+  }
+  updateAuthUI(null);
+  $('checkoutStatus').textContent = 'You have been signed out.';
+});
+
+document.querySelectorAll('input[name="payment_method"]').forEach(radio=>{
+  radio.addEventListener('change',()=>{
+    const gcash = document.querySelector('input[name="payment_method"]:checked').value === 'gcash';
+    $('gcashInstructions').classList.toggle('hidden',!gcash);
+    $('codInstructions').classList.toggle('hidden',gcash);
+    $('paymentReceipt').required = gcash;
+    $('checkoutStatus').textContent = '';
+  });
+});
+
+$('checkoutForm').addEventListener('submit',async event=>{
+  event.preventDefault();
+  if (checkoutBusy || !selectedBouquet) return;
+
+  // Refresh the session before writing so user_id always comes from Supabase Auth.
+  const {data:sessionData,error:sessionError} = await supabaseClient.auth.getUser();
+  if (sessionError || !sessionData.user) {
+    updateAuthUI(null);
+    $('checkoutStatus').textContent = 'Please log in before placing your order.';
+    return;
+  }
+  const user = sessionData.user;
+  updateAuthUI(user);
+
+  const paymentMethod = document.querySelector('input[name="payment_method"]:checked')?.value;
+  const receiptFile = $('paymentReceipt').files?.[0];
+  if (paymentMethod === 'gcash') {
+    if (!receiptFile) {
+      $('checkoutStatus').textContent = 'Please upload your GCash payment screenshot.';
+      return;
+    }
+    if (!/^image\/(png|jpeg|webp)$/.test(receiptFile.type) || receiptFile.size > 5*1024*1024) {
+      $('checkoutStatus').textContent = 'Upload a JPG, PNG, or WebP image no larger than 5 MB.';
+      return;
+    }
+  }
+  checkoutBusy = true;
+  const button = $('placeOrderBtn');
+  button.disabled = true;
+  button.textContent = 'SUBMITTING ORDER…';
+  $('checkoutStatus').textContent = '';
+  $('checkoutStatus').style.color = '#9a3f4e';
+
+  let receiptPath = null;
+  let designId = null;
+  try {
+    const total = Number(selectedBouquet.price)||0;
+    const orderId = crypto.randomUUID();
+    const flowerItems = [{
+      product_id:`prebuilt-${selectedBouquet.id}`,
+      name:selectedBouquet.name,
+      price:total,
+      image_url:selectedBouquet.image_url,
+      description:selectedBouquet.description || 'Ready-made bouquet',
+      type:'prebuilt_bouquet'
+    }];
+
+    const {data:designData,error:designError} = await supabaseClient.from('bouquet_designs').insert({
+      user_id:user.id,
+      main_flowers:flowerItems,
+      filler:null,
+      wrapper:{product_id:'prebuilt-included',name:'Included in pre-built bouquet',price:0},
+      ribbon:{product_id:'prebuilt-included',name:'Included in pre-built bouquet',price:0},
+      total_price:total
+    }).select('id').single();
+    if (designError) throw designError;
+    designId = designData.id;
+
+    if (paymentMethod === 'gcash') {
+      const extension = (receiptFile.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'') || 'jpg';
+      receiptPath = `${user.id}/${orderId}.${extension}`;
+      const {error:uploadError} = await supabaseClient.storage.from('payment-receipts').upload(
+        receiptPath,receiptFile,{contentType:receiptFile.type,upsert:false}
+      );
+      if (uploadError) throw uploadError;
+    }
+
+    const {error:orderError} = await supabaseClient.from('bouquet_orders').insert({
+      id:orderId,
+      user_id:user.id,
+      bouquet_design_id:designId,
+      full_name:$('checkoutName').value.trim(),
+      phone:$('checkoutPhone').value.trim(),
+      delivery_address:$('checkoutAddress').value.trim(),
+      notes:$('checkoutNotes').value.trim() || null,
+      payment_method:paymentMethod,
+      payment_status:paymentMethod === 'gcash' ? 'pending_verification' : 'unpaid_cod',
+      order_status:paymentMethod === 'gcash' ? 'pending_payment' : 'pending',
+      total_price:total,
+      receipt_path:receiptPath
+    });
+    if (orderError) throw orderError;
+
+    $('checkoutStatus').style.color = '#315d3a';
+    $('checkoutStatus').textContent = paymentMethod === 'gcash'
+      ? 'Order submitted! Your GCash payment is pending verification.'
+      : 'Order submitted! Please pay upon delivery.';
+    button.textContent = 'ORDER SUBMITTED';
+    button.disabled = true;
+  } catch(error) {
+    console.error('Checkout failed:',error);
+    // Best-effort cleanup if a receipt upload succeeded but order creation failed.
+    if (receiptPath) {
+      const {error:cleanupError} = await supabaseClient.storage.from('payment-receipts').remove([receiptPath]);
+      if (cleanupError) console.warn('Could not remove unused receipt upload:',cleanupError);
+    }
+    // Remove the design created for an order that did not save.
+    if (designId) {
+      const {error:cleanupError} = await supabaseClient.from('bouquet_designs').delete().eq('id',designId).eq('user_id',user.id);
+      if (cleanupError) console.warn('Could not remove unused bouquet design:',cleanupError);
+    }
+    $('checkoutStatus').style.color = '#9a3f4e';
+    $('checkoutStatus').textContent = error.message || 'Could not submit the order. Check your Supabase tables, storage bucket, and RLS policies.';
+    button.disabled = false;
+    button.textContent = 'SUBMIT ORDER';
+  } finally {
+    checkoutBusy = false;
+    if (button.textContent !== 'ORDER SUBMITTED') button.disabled = !currentUser;
+  }
+});
+
+supabaseClient.auth.onAuthStateChange((_event,session)=>{
+  updateAuthUI(session?.user || null);
+});
+(async()=>{
+  const {data,error} = await supabaseClient.auth.getSession();
+  if (error) console.warn('Could not read auth session:',error);
+  updateAuthUI(data?.session?.user || null);
+  await initializeCheckout();
+})();
+</script>
+</body>
+</html>
