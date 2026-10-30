@@ -801,16 +801,16 @@
         <div class="header-right">
           <span>✿ Custom flower studio</span>
           <span class="pill">Live preview</span>
-          <!-- <button type="button" id="view_order_status_Btn" class="logout-btn" style="border-color: green; color:green;">
+          <button type="button" id="view_order_status_Btn" class="logout-btn" style="border-color: green; color:green;">
             View Order Status
-          </button> -->
+          </button>
           <button type="button" id="liveChatBtn" class="logout-btn" style="border-color: var(--teal); color: var(--teal-dark);">
             Live Chat
           </button>
 
-          <!-- <button type="button" id="logoutBtn" class="logout-btn">
+          <button type="button" id="logoutBtn" class="logout-btn">
             Logout
-          </button> -->
+          </button>
         </div>
       </header>
 
@@ -1307,39 +1307,39 @@
         return true;
       }
 
-      // verifyLogin();
+      verifyLogin();
 
-      // document
-      //   .getElementById("logoutBtn")
-      //   .addEventListener("click", async () => {
-      //     const { error } = await supabaseClient.auth.signOut();
+      document
+        .getElementById("logoutBtn")
+        .addEventListener("click", async () => {
+          const { error } = await supabaseClient.auth.signOut();
 
-      //     if (error) {
-      //       alert("Unable to log out. Please try again.");
-      //       console.error(error);
-      //       return;
-      //     }
+          if (error) {
+            alert("Unable to log out. Please try again.");
+            console.error(error);
+            return;
+          }
 
-      //     let cf = confirm("Are you sure to logout?");
+          let cf = confirm("Are you sure to logout?");
 
-      //     if (cf) {
-      //       window.location.replace("index.html");
-      //     }
-      //   });
+          if (cf) {
+            window.location.replace("index.html");
+          }
+        });
 
-        //      document
-        // .getElementById("view_order_status_Btn")
-        // .addEventListener("click", () => {
-        //   // Keep the buyer signed in so the tracking page can reuse the session.
-        //   window.location.href = "roadside_bouquet_my_orders_tracking.html";
-        // });
+             document
+        .getElementById("view_order_status_Btn")
+        .addEventListener("click", () => {
+          // Keep the buyer signed in so the tracking page can reuse the session.
+          window.location.href = "roadside_bouquet_my_orders_tracking.html";
+        });
 
         document.getElementById("liveChatBtn").addEventListener("click", async () => {
-          // const { data, error } = await supabaseClient.auth.getSession();
-          // if (error || !data.session) {
-          //   window.location.replace("login.html");
-          //   return;
-          // }
+          const { data, error } = await supabaseClient.auth.getSession();
+          if (error || !data.session) {
+            window.location.replace("login.html");
+            return;
+          }
           window.location.href = "roadside_bouquet_live_chat.html";
         });
 
