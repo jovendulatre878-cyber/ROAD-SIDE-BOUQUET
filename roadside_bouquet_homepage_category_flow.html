@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#fbf6f2">
+<title>Roadside Bouquet | Flowers Made Personal</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--ink:#352d2c;--muted:#81736e;--rose:#a94f65;--rose-dark:#853b50;--cream:#fbf7f2;--sage:#71866b;--line:#eadfd8;--white:#fff;--shadow:0 16px 45px #533c3514}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--ink);background:#fff;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}a{color:inherit;text-decoration:none}button{font:inherit;cursor:pointer}.topbar{background:#f4e8e7;text-align:center;padding:9px 16px;font-size:12px;letter-spacing:.08em;color:#6d4a50}.nav{height:76px;padding:0 clamp(20px,6vw,90px);display:flex;align-items:center;justify-content:space-between;gap:24px;border-bottom:1px solid var(--line);background:#fff}.brand{font-family:Georgia,serif;font-size:25px;letter-spacing:-.04em;font-weight:bold}.brand span{color:var(--rose)}.navlinks{display:flex;gap:28px;align-items:center;font-size:14px}.navlinks a:hover{color:var(--rose)}.nav-actions{display:flex;align-items:center;gap:12px}.btn{border:0;border-radius:999px;padding:12px 20px;font-weight:650;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:.2s}.btn-primary{background:var(--rose);color:white}.btn-primary:hover{background:var(--rose-dark);transform:translateY(-1px)}.btn-outline{border:1px solid #d8c6c2;background:#fff;color:var(--ink)}.btn-outline:hover{border-color:var(--rose);color:var(--rose)}.hero{background:var(--cream);padding:60px clamp(20px,7vw,100px) 64px;display:grid;grid-template-columns:1.02fr .98fr;gap:50px;align-items:center;min-height:490px}.eyebrow{text-transform:uppercase;letter-spacing:.19em;font-size:11px;color:var(--rose);font-weight:750}.hero h1{font-family:Georgia,serif;font-weight:500;font-size:clamp(42px,5.5vw,72px);line-height:1.04;letter-spacing:-.045em;margin:18px 0}.hero h1 em{color:var(--rose);font-weight:500}.hero p{color:var(--muted);line-height:1.8;max-width:470px;font-size:15px}.hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}.hero-note{display:flex;align-items:center;gap:9px;margin-top:26px;color:#786b66;font-size:12px}.hero-note b{color:var(--sage)}.hero-photo{height:365px;position:relative}.hero-photo img{width:100%;height:100%;object-fit:cover;border-radius:48% 48% 18px 18px;box-shadow:var(--shadow)}.floating-note{position:absolute;left:-25px;bottom:22px;background:#fff;padding:16px 19px;border-radius:12px;box-shadow:var(--shadow);font-family:Georgia,serif;font-size:16px}.floating-note small{display:block;font-family:inherit;color:var(--muted);font-size:11px;margin-top:5px}.section{padding:70px clamp(20px,7vw,100px)}.section-head{text-align:center;max-width:650px;margin:0 auto 32px}.section-head h2{font-family:Georgia,serif;font-size:clamp(30px,4vw,43px);font-weight:500;letter-spacing:-.03em;margin:10px 0}.section-head p{color:var(--muted);font-size:14px;line-height:1.7}.catalog-status{text-align:center;color:var(--muted);font-size:12px;min-height:20px;margin:0 0 14px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}.category-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin:0 0 28px}.category-card{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff;cursor:pointer;text-align:left;padding:0;transition:.2s;color:var(--ink)}.category-card:hover,.category-card.active{transform:translateY(-3px);border-color:var(--rose);box-shadow:var(--shadow)}.category-card img{display:block;width:100%;height:150px;object-fit:cover;background:#f6eeea}.category-card span{display:block;padding:14px 16px;font-family:Georgia,serif;font-size:19px}.category-card small{display:block;font:11px Inter,ui-sans-serif,system-ui,sans-serif;color:var(--muted);padding:0 16px 15px}.catalog-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}.catalog-toolbar h3{font:500 25px Georgia,serif;margin:0}.text-button{border:0;background:transparent;color:var(--rose);font-weight:700;padding:8px}.detail-modal{position:fixed;inset:0;background:#21191acc;display:none;align-items:center;justify-content:center;padding:20px;z-index:100}.detail-modal.open{display:flex}.detail-panel{background:#fff;border-radius:18px;max-width:760px;width:100%;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;position:relative;box-shadow:0 24px 80px #0003}.detail-panel img{width:100%;height:100%;min-height:330px;object-fit:cover;background:#f6eeea}.detail-copy{padding:34px 28px;align-self:center}.detail-copy h3{font:500 30px Georgia,serif;margin:10px 0}.detail-copy p{color:var(--muted);line-height:1.7;font-size:14px}.detail-close{position:absolute;right:12px;top:12px;border:0;border-radius:50%;width:36px;height:36px;background:#fff;font-size:22px;box-shadow:0 2px 10px #0002}.card{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:white;transition:transform .2s,box-shadow .2s}.card:hover{transform:translateY(-4px);box-shadow:var(--shadow)}.card-image{height:260px;background:#f6eeea;position:relative;overflow:hidden}.card-image img{width:100%;height:100%;object-fit:cover;display:block}.pill{position:absolute;top:13px;left:13px;background:#fffdf9eF;color:#6d4a50;border-radius:99px;padding:7px 10px;font-size:10px;font-weight:750;letter-spacing:.06em}.card-content{padding:18px}.card-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.card h3{font-family:Georgia,serif;font-size:22px;font-weight:500;margin:0 0 7px}.price{font-weight:750;white-space:nowrap;font-size:15px;color:var(--rose)}.card p{font-size:12px;line-height:1.65;color:var(--muted);margin:0 0 16px;min-height:40px}.card .btn{width:100%}.empty{grid-column:1/-1;text-align:center;border:1px dashed var(--line);border-radius:16px;padding:35px;color:var(--muted)}.custom{margin:0 clamp(20px,7vw,100px) 70px;padding:40px 45px;border-radius:20px;background:#edf1e9;display:flex;align-items:center;justify-content:space-between;gap:30px}.custom h2{font-family:Georgia,serif;font-size:32px;font-weight:500;margin:8px 0}.custom p{color:#6f7b69;line-height:1.7;font-size:14px;max-width:540px;margin:0}.custom-mark{font-size:48px;color:var(--sage)}.benefits{display:grid;grid-template-columns:repeat(3,1fr);gap:25px;text-align:center}.benefit{padding:12px}.benefit .icon{font-size:25px;color:var(--rose)}.benefit h3{font-family:Georgia,serif;font-size:19px;font-weight:500}.benefit p{font-size:12px;line-height:1.7;color:var(--muted)}footer{background:#392f30;color:#f7eeea;padding:30px clamp(20px,7vw,100px);display:flex;justify-content:space-between;gap:20px;align-items:center;font-size:12px}footer span{color:#d8bfc1}.toast{position:fixed;right:20px;bottom:20px;background:#392f30;color:#fff;padding:13px 18px;border-radius:12px;box-shadow:var(--shadow);font-size:13px;display:none;max-width:340px;z-index:10}.toast.show{display:block}
+@media(max-width:850px){.category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.detail-panel{max-width:560px}.nav{padding:0 20px}.navlinks{display:none}.hero{grid-template-columns:1fr;gap:30px;padding-top:42px}.hero-photo{height:310px;max-width:520px;width:100%;margin:auto}.floating-note{left:8px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.custom{margin-left:20px;margin-right:20px;padding:28px;align-items:flex-start}.benefits{grid-template-columns:1fr;gap:10px}}@media(max-width:560px){.category-grid{grid-template-columns:1fr 1fr;gap:10px}.category-card img{height:105px}.category-card span{font-size:16px;padding:11px 10px 4px}.category-card small{padding:0 10px 11px}.catalog-toolbar{align-items:flex-start}.detail-panel{grid-template-columns:1fr;max-height:90vh;overflow:auto}.detail-panel img{height:220px;min-height:220px}.detail-copy{padding:22px}.nav{height:66px}.brand{font-size:21px}.nav-actions .btn{padding:10px 13px;font-size:12px}.hero h1{font-size:46px}.hero-photo{height:270px}.section{padding-top:52px;padding-bottom:52px}.grid{grid-template-columns:1fr;gap:16px}.card-image{height:300px}.custom{display:block}.custom-mark{display:none}footer{display:block;line-height:1.8}}
+</style>
+</head>
+<body>
+<div class="topbar">HANDCRAFTED BOUQUETS · MADE FOR YOUR MOMENTS</div>
+<header class="nav">
+  <a class="brand" href="index.html">Roadside <span>Bouquet</span></a>
+  <nav class="navlinks"><a href="#bouquets">Shop Bouquets</a><a href="#custom">Build Your Own</a><a href="#story">Our Promise</a></nav>
+  <div class="nav-actions"><a class="btn btn-outline" href="buyer-login-supabase-fixed.html">Log in</a><a class="btn btn-primary" href="#bouquets">Shop now</a></div>
+</header>
+<main>
+<section class="hero">
+  <div>
+    <div class="eyebrow">A little beauty, thoughtfully arranged</div>
+    <h1>Flowers that say<br><em>what words can't.</em></h1>
+    <p>Find a bouquet that feels just right. Choose one of our ready-made arrangements or create something personal, petal by petal.</p>
+    <div class="hero-actions"><a class="btn btn-primary" href="#bouquets">Explore bouquets <span aria-hidden="true">↗</span></a><a class="btn btn-outline" href="#custom">Create your own</a></div>
+    <div class="hero-note"><b>✿ Thoughtfully arranged</b><span>·</span><span>Made to feel personal</span></div>
+  </div>
+  <div class="hero-photo">
+    <img src="https://images.unsplash.com/photo-1525310072745-f49212b5ac6d?auto=format&fit=crop&w=1200&q=85" alt="Soft pastel bouquet arranged with care" onerror="this.src='https://images.unsplash.com/photo-1494972308805-463bc619d34e?auto=format&fit=crop&w=1200&q=85'">
+    <div class="floating-note">A thoughtful gift, every time.<small>Made with care at Roadside Bouquet</small></div>
+  </div>
+</section>
+<section class="section" id="bouquets">
+  <div class="section-head"><div class="eyebrow">The bouquet edit</div><h2>Find your kind of flowers</h2><p>Shop our pre-built bouquets, each with its own look and feeling. Select a design to view it and continue to ordering.</p></div>
+  <div class="catalog-status" id="catalogStatus" aria-live="polite">Loading bouquet collection…</div>
+  <div id="categoryView">
+    <div class="category-grid" id="categoryGrid" aria-label="Bouquet categories"></div>
+    <div class="catalog-toolbar"><h3 id="selectedCategoryTitle">All bouquet categories</h3><button class="text-button" id="showAllCategories" type="button" hidden>← All categories</button></div>
+  </div>
+  <div class="grid" id="bouquetGrid">
+    <article class="card"><div class="card-image"><img src="https://images.unsplash.com/photo-1525310072745-f49212b5ac6d?auto=format&fit=crop&w=800&q=80" alt="Pastel bouquet"></div><div class="card-content"><h3>Pastel Daydream</h3><p>Soft colors and a gentle, romantic feel.</p><a class="btn btn-outline" href="buyer-login-supabase-fixed.html">Choose bouquet</a></div></article>
+    <article class="card"><div class="card-image"><img src="https://images.unsplash.com/photo-1494972308805-463bc619d34e?auto=format&fit=crop&w=800&q=80" alt="Elegant flower bouquet"></div><div class="card-content"><h3>Garden Romance</h3><p>A timeless arrangement for special moments.</p><a class="btn btn-outline" href="buyer-login-supabase-fixed.html">Choose bouquet</a></div></article>
+    <article class="card"><div class="card-image"><img src="https://images.unsplash.com/photo-1561181286-d3fee7d55364?auto=format&fit=crop&w=800&q=80" alt="Fresh colorful bouquet"></div><div class="card-content"><h3>Blooming Joy</h3><p>A bright, cheerful way to make someone smile.</p><a class="btn btn-outline" href="buyer-login-supabase-fixed.html">Choose bouquet</a></div></article>
+  </div>
+</section>
+<section class="custom" id="custom"><div><div class="eyebrow">Made by you</div><h2>Your flowers, your way.</h2><p>Mix your favorite flowers, choose fillers and wrapping, and preview your own bouquet before saving your design and placing an order.</p></div><div><div class="custom-mark" aria-hidden="true">✿</div><a class="btn btn-primary" href="roadside_bouquet_builder.html">Open bouquet builder ↗</a></div></section>
+<section class="section" id="story"><div class="section-head"><div class="eyebrow">The Roadside promise</div><h2>Little details. Lots of heart.</h2></div><div class="benefits"><div class="benefit"><div class="icon">✿</div><h3>Thoughtful designs</h3><p>Ready-made looks for birthdays, celebrations, and everyday surprises.</p></div><div class="benefit"><div class="icon">♡</div><h3>Made personal</h3><p>Build a bouquet that reflects your style and the person receiving it.</p></div><div class="benefit"><div class="icon">✧</div><h3>Easy ordering</h3><p>Save your design and follow your order through your buyer account.</p></div></div></section>
+</main>
+<footer><div><strong>Roadside Bouquet</strong><br><span>Flowers made personal.</span></div><div>© <span id="year"></span> Roadside Bouquet. All rights reserved.</div><a href="buyer-login-supabase-fixed.html">Buyer account</a></footer>
+<div class="detail-modal" id="bouquetDetailModal" role="dialog" aria-modal="true" aria-labelledby="detailBouquetName">
+  <div class="detail-panel">
+    <button class="detail-close" id="closeBouquetDetail" type="button" aria-label="Close bouquet details">×</button>
+    <img id="detailBouquetImage" src="" alt="Selected bouquet">
+    <div class="detail-copy">
+      <div class="eyebrow" id="detailBouquetCategory">Bouquet category</div>
+      <h3 id="detailBouquetName">Bouquet name</h3>
+      <div class="price" id="detailBouquetPrice">₱0.00</div>
+      <p id="detailBouquetDescription">Bouquet details will appear here.</p>
+      <button class="btn btn-primary" id="detailOrderButton" type="button">Continue to order ↗</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script>
+const SUPABASE_URL = "https://mfgsuppsxqukymxafmde.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_QftaNSdWPgOi7ql2575Dzw_ML5D4xnv";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+const grid = document.getElementById("bouquetGrid");
+const statusEl = document.getElementById("catalogStatus");
+const categoryGrid = document.getElementById("categoryGrid");
+const selectedCategoryTitle = document.getElementById("selectedCategoryTitle");
+const showAllButton = document.getElementById("showAllCategories");
+const detailModal = document.getElementById("bouquetDetailModal");
+let allBouquets = [];
+let activeCategory = null;
+let selectedBouquet = null;
+document.getElementById("year").textContent = new Date().getFullYear();
+const money = (value) => new Intl.NumberFormat("en-PH",{style:"currency",currency:"PHP",maximumFractionDigits:2}).format(Number(value||0));
+function safeText(value){return String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));}
+const categoryDefaults = [
+ {name:"Valentines Bouquet",image:"https://images.unsplash.com/photo-1518895949257-7621c3c786d7?auto=format&fit=crop&w=700&q=80"},
+ {name:"Teachers Day Bouquet",image:"https://images.unsplash.com/photo-1494972308805-463bc619d34e?auto=format&fit=crop&w=700&q=80"},
+ {name:"Mothers Day Bouquet",image:"https://images.unsplash.com/photo-1525310072745-f49212b5ac6d?auto=format&fit=crop&w=700&q=80"},
+ {name:"Graduation Bouquet",image:"https://images.unsplash.com/photo-1561181286-d3fee7d55364?auto=format&fit=crop&w=700&q=80"},
+ {name:"Bridal Bouquet",image:"https://images.unsplash.com/photo-1523438885200-e635ba2c371e?auto=format&fit=crop&w=700&q=80"},
+ {name:"All Saints All Souls Bouquet",image:"https://images.unsplash.com/photo-1508610048659-a06b669e3321?auto=format&fit=crop&w=700&q=80"}
+];
+function categoryName(item){return String(item.category||"Other Bouquets").trim()||"Other Bouquets";}
+function renderCategories(){
+ const counts = allBouquets.reduce((acc,item)=>{const c=categoryName(item);acc[c]=(acc[c]||0)+1;return acc;},{});
+ const names = [...new Set([...categoryDefaults.map(c=>c.name),...Object.keys(counts).filter(c=>!categoryDefaults.some(d=>d.name.toLowerCase()===c.toLowerCase()))])];
+ categoryGrid.innerHTML=names.map(name=>{
+  const defaultItem=categoryDefaults.find(c=>c.name.toLowerCase()===name.toLowerCase());
+  const first=allBouquets.find(item=>categoryName(item).toLowerCase()===name.toLowerCase()&&item.image_url);
+  const image=safeText(first?.image_url||defaultItem?.image||categoryDefaults[0].image);
+  const count=counts[name]||0;
+  return `<button class="category-card ${activeCategory===name?'active':''}" type="button" data-category="${safeText(name)}"><img src="${image}" alt="${safeText(name)}" loading="lazy"><span>${safeText(name)}</span><small>${count} ${count===1?'bouquet':'bouquets'}</small></button>`;
+ }).join("");
+ categoryGrid.querySelectorAll("[data-category]").forEach(button=>button.addEventListener("click",()=>{activeCategory=button.dataset.category;renderCategories();renderBouquets(allBouquets.filter(item=>categoryName(item).toLowerCase()===activeCategory.toLowerCase()));selectedCategoryTitle.textContent=activeCategory;showAllButton.hidden=false;grid.scrollIntoView({behavior:"smooth",block:"start"});}));
+}
+function openDetails(item){selectedBouquet=item;document.getElementById("detailBouquetImage").src=item.image_url||"";document.getElementById("detailBouquetImage").alt=item.name||"Bouquet";document.getElementById("detailBouquetCategory").textContent=categoryName(item);document.getElementById("detailBouquetName").textContent=item.name||"Signature Bouquet";document.getElementById("detailBouquetPrice").textContent=money(item.price);document.getElementById("detailBouquetDescription").textContent=item.description||"A thoughtful arrangement made with care.";detailModal.classList.add("open");document.body.style.overflow="hidden";}
+function closeDetails(){detailModal.classList.remove("open");document.body.style.overflow="";}
+document.getElementById("closeBouquetDetail")?.addEventListener("click",closeDetails);
+detailModal?.addEventListener("click",event=>{if(event.target===detailModal)closeDetails();});
+document.addEventListener("keydown",event=>{if(event.key==="Escape")closeDetails();});
+showAllButton?.addEventListener("click",()=>{activeCategory=null;renderCategories();grid.innerHTML="";selectedCategoryTitle.textContent="All bouquet categories";showAllButton.hidden=true;statusEl.textContent="Choose a category above to browse its bouquets.";});
+function renderBouquets(items){
+ if(!items?.length){grid.innerHTML='<div class="empty">No bouquets in this category yet. Please check back soon.</div>';return;}
+ grid.innerHTML=items.map((item,index)=>{
+  const name=safeText(item.name||"Signature Bouquet");const description=safeText(item.description||"A thoughtful arrangement made with care.");const image=safeText(item.image_url||"");
+  return `<article class="card"><div class="card-image"><img src="${image}" alt="${name}" loading="lazy" onerror="this.style.display='none'"><span class="pill">${safeText(categoryName(item))}</span></div><div class="card-content"><div class="card-title-row"><h3>${name}</h3><span class="price">${money(item.price)}</span></div><p>${description}</p><button class="btn btn-outline" type="button" data-bouquet-index="${allBouquets.indexOf(item)}">View details</button></div></article>`;
+ }).join("");
+ grid.querySelectorAll("[data-bouquet-index]").forEach(button=>button.addEventListener("click",()=>openDetails(allBouquets[Number(button.dataset.bouquetIndex)])));
+}
+document.getElementById("detailOrderButton")?.addEventListener("click",async()=>{
+ if(!selectedBouquet)return;
+ sessionStorage.setItem("roadside_selected_bouquet_id",String(selectedBouquet.id));sessionStorage.setItem("roadside_selected_bouquet_name",selectedBouquet.name||"Signature Bouquet");closeDetails();
+ const {data:{session}}=await supabaseClient.auth.getSession();
+ if(!session){window.location.href="buyer-login-supabase-fixed.html?next=roadside_bouquet_builder.html";return;}
+ window.location.href="roadside_bouquet_builder.html";
+});
+async function loadBouquets(){
+ try{
+  const {data,error}=await supabaseClient.from("prebuilt_bouquets").select("id,name,description,price,image_url,is_active,display_order,category").eq("is_active",true).order("display_order",{ascending:true});
+  if(error) throw error;allBouquets=data||[];renderCategories();grid.innerHTML="";statusEl.textContent=allBouquets.length?"Choose a category to explore our ready-made bouquets.":"No active bouquets have been added yet.";
+ }catch(error){console.warn("Could not load Supabase bouquet catalog:",error.message);statusEl.textContent="Could not load the live bouquet collection. Check the category column and Supabase permissions.";categoryGrid.innerHTML=categoryDefaults.map(c=>`<button class="category-card" type="button" data-category="${safeText(c.name)}"><img src="${c.image}" alt="${safeText(c.name)}"><span>${safeText(c.name)}</span><small>Browse bouquets</small></button>`).join("");categoryGrid.querySelectorAll("[data-category]").forEach(button=>button.addEventListener("click",()=>{activeCategory=button.dataset.category;selectedCategoryTitle.textContent=activeCategory;showAllButton.hidden=false;grid.innerHTML='<div class="empty">Please check the Supabase category column and bouquet records.</div>';}));}
+}
+loadBouquets();
+</script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Roadside Bouquet — Pre-built Flower Manager</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--rose:#a94f65;--dark:#352d2c;--muted:#81736e;--cream:#fbf7f2;--line:#eadfd8;--sage:#71866b}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--dark);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+header{background:white;border-bottom:1px solid var(--line);padding:20px clamp(18px,5vw,60px);display:flex;justify-content:space-between;align-items:center;gap:12px}
+.brand{font:700 24px Georgia,serif}.brand span{color:var(--rose)}main{max-width:1050px;margin:30px auto;padding:0 18px}
+.panel{background:white;border:1px solid var(--line);border-radius:18px;padding:clamp(18px,3vw,30px);margin-bottom:20px;box-shadow:0 12px 35px #533c350d}
+h1,h2{font-family:Georgia,serif;font-weight:500}h1{font-size:clamp(30px,5vw,42px);margin:0 0 8px}h2{font-size:25px;margin:0 0 18px}.muted{color:var(--muted);line-height:1.65;font-size:14px}
+label{display:block;font-size:13px;font-weight:700;margin:14px 0 6px}input,textarea,select{width:100%;padding:12px 13px;border:1px solid #d9cbc4;border-radius:10px;font:inherit;background:white;color:var(--dark)}textarea{min-height:85px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}.btn{border:0;border-radius:999px;padding:12px 18px;font:700 13px inherit;cursor:pointer;background:var(--rose);color:white}.btn.secondary{background:white;color:var(--dark);border:1px solid var(--line)}.btn.danger{background:#9a3443}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px}.status{margin-top:12px;font-size:13px;line-height:1.5;white-space:pre-wrap}.hidden{display:none!important}.preview{width:100%;max-height:250px;object-fit:contain;border-radius:12px;background:#f8f0ec;margin-top:12px}.catalog{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.item{border:1px solid var(--line);border-radius:14px;overflow:hidden}.item img{width:100%;height:180px;object-fit:cover;background:#f5ece8}.item-body{padding:13px}.item h3{font:500 20px Georgia,serif;margin:0 0 6px}.item p{font-size:12px;color:var(--muted);margin:0 0 10px;line-height:1.5}.item-actions{display:flex;gap:7px;flex-wrap:wrap}.item-actions .btn{padding:9px 12px;font-size:11px}.tag{font-size:10px;letter-spacing:.06em;color:var(--sage);font-weight:800}
+@media(max-width:700px){.catalog{grid-template-columns:repeat(2,minmax(0,1fr))}.row{grid-template-columns:1fr}}@media(max-width:460px){.catalog{grid-template-columns:1fr}.item img{height:230px}}
+</style>
+</head>
+<body>
+<header><div class="brand">Roadside <span>Bouquet</span> <small style="font:12px system-ui;color:#81736e">/ Flower Manager</small></div>
+    
+    <button id="backBtn" class="btn">Back</button>
+
+    <button id="logoutBtn" class="btn secondary" style="display: none;"></button>
+
+</header>
+<main>
+<section class="panel">
+<h1>Pre-built Flower Manager</h1>
+<p class="muted">Upload bouquet photos to Supabase Storage and manage the pre-built bouquet catalog shown on your homepage. Sign in with an account already approved in <code>public.bouquet_admins</code>.</p>
+<div id="loginPanel">
+<h2>Admin login</h2>
+<div class="row"><div><label for="email">Email</label><input id="email" type="email" autocomplete="username" placeholder="Admin email"></div><div><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" placeholder="Password"></div></div>
+<div class="actions"><button id="loginBtn" class="btn">Sign in</button></div>
+</div>
+<div id="editorPanel" class="hidden">
+<h2 id="formTitle">Add a pre-built bouquet</h2>
+<input type="hidden" id="bouquetId">
+<label for="name">Bouquet name *</label><input id="name" maxlength="100" placeholder="e.g. Pink Rose Delight">
+<label for="description">Description</label><textarea id="description" maxlength="500" placeholder="Describe the flowers and wrapping"></textarea>
+<label for="category">Bouquet category *</label><select id="category" required><option value="">Choose a category</option><option value="Valentines Bouquet">Valentines Bouquet</option><option value="Teachers Day Bouquet">Teachers Day Bouquet</option><option value="Mothers Day Bouquet">Mothers Day Bouquet</option><option value="Graduation Bouquet">Graduation Bouquet</option><option value="Bridal Bouquet">Bridal Bouquet</option><option value="All Saints All Souls Bouquet">All Saints All Souls Bouquet</option><option value="Other">Other</option></select>
+<div class="row"><div><label for="price">Price (PHP) *</label><input id="price" type="number" min="0" step="0.01" placeholder="899"></div><div><label for="order">Display order</label><input id="order" type="number" step="1" value="1"></div></div>
+<label for="imageFile">Bouquet image *</label><input id="imageFile" type="file" accept="image/png,image/jpeg,image/webp">
+<img id="preview" class="preview hidden" alt="Selected bouquet preview">
+<p class="muted">Accepted formats: JPG, PNG, WEBP. Recommended image: clear bouquet photo, square or portrait. Uploads are limited to 8 MB.</p>
+<label style="display:flex;align-items:center;gap:8px;font-weight:500"><input id="active" type="checkbox" checked style="width:auto"> Show this bouquet on the homepage</label>
+<div class="actions"><button id="saveBtn" class="btn">Upload image & save bouquet</button><button id="resetBtn" class="btn secondary">Clear form</button></div>
+</div>
+<div id="status" class="status" role="status" aria-live="polite"></div>
+</section>
+<section id="catalogPanel" class="panel hidden"><h2>Saved bouquets</h2><p class="muted">Edit an item to replace its photo or details. Deleting a catalog item removes it from the homepage; it does not delete existing customer orders.</p><div id="catalog" class="catalog"></div></section>
+</main>
+<script>
+const SUPABASE_URL = "https://mfgsuppsxqukymxafmde.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_QftaNSdWPgOi7ql2575Dzw_ML5D4xnv";
+const BUCKET = "prebuilt-bouquet-images";
+const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+const $ = id => document.getElementById(id);
+let isAdmin = false;
+let currentImageUrl = "";
+function status(message, error=false){$("status").textContent=message;$("status").style.color=error?"#a12b3b":"#52694c";}
+function safe(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function resetForm(){
+ $("bouquetId").value="";$("name").value="";$("description").value="";$("category").value="";$("price").value="";$("order").value="1";$("active").checked=true;$("imageFile").value="";$("preview").src="";$("preview").classList.add("hidden");currentImageUrl="";$("formTitle").textContent="Add a pre-built bouquet";$("saveBtn").textContent="Upload image & save bouquet";
+}
+$("imageFile").addEventListener("change",()=>{const f=$("imageFile").files[0];if(!f){$("preview").classList.add("hidden");return;}if(f.size>8*1024*1024){status("Image is larger than 8 MB. Please choose a smaller file.",true);$("imageFile").value="";return;}if(!["image/jpeg","image/png","image/webp"].includes(f.type)){status("Please choose a JPG, PNG, or WEBP image.",true);$("imageFile").value="";return;} $("preview").src=URL.createObjectURL(f);$("preview").classList.remove("hidden");});
+async function checkAdmin(){
+ const {data:{session}}=await client.auth.getSession();
+ if(!session){showLoggedOut();return false;}
+ const {data,error}=await client.rpc("is_bouquet_admin");
+ if(error||data!==true){await client.auth.signOut();showLoggedOut();status("This account is not approved as a bouquet admin. Add its Auth user UUID to public.bouquet_admins, then sign in again.",true);return false;}
+ isAdmin=true;$("loginPanel").classList.add("hidden");$("editorPanel").classList.remove("hidden");$("catalogPanel").classList.remove("hidden");$("logoutBtn").classList.remove("hidden");await loadCatalog();return true;
+}
+function showLoggedOut(){isAdmin=false;$("loginPanel").classList.remove("hidden");$("editorPanel").classList.add("hidden");$("catalogPanel").classList.add("hidden");
+$("logoutBtn").classList.add("hidden");}
+
+$("backBtn").addEventListener("click", (e) => {
+    window.location.href = "admin_dashboard_live_chat.html";
+});
+
+$("loginBtn").addEventListener("click",async()=>{status("Signing in…");const {error}=await client.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});if(error){status(error.message,true);return;}await checkAdmin();});
+$("logoutBtn").addEventListener("click",async()=>{await client.auth.signOut();showLoggedOut();status("Signed out.");});
+$("resetBtn").addEventListener("click",()=>{resetForm();status("");});
+async function loadCatalog(){
+ if(!isAdmin)return;
+ const {data,error}=await client.from("prebuilt_bouquets").select("id,name,description,category,price,image_url,is_active,display_order").order("display_order",{ascending:true});
+ if(error){status("Could not load catalog: "+error.message,true);return;}
+ $("catalog").innerHTML=(data||[]).map(b=>`<article class="item"><img src="${safe(b.image_url)}" alt="${safe(b.name)}" loading="lazy"><div class="item-body"><div class="tag">${b.is_active?"VISIBLE ON HOMEPAGE":"HIDDEN"}</div><p><strong>Category:</strong> ${safe(b.category||"Uncategorized")}</p><h3>${safe(b.name)}</h3><p>₱${Number(b.price||0).toFixed(2)} · Order ${Number(b.display_order||0)}</p><p>${safe(b.description||"")}</p><div class="item-actions"><button class="btn secondary" data-edit="${b.id}">Edit</button><button class="btn danger" data-delete="${b.id}">Delete</button></div></div></article>`).join("")||"<p>No bouquets saved yet.</p>";
+ $("catalog").querySelectorAll("[data-edit]").forEach(btn=>btn.addEventListener("click",()=>editBouquet(data.find(b=>String(b.id)===btn.dataset.edit))));
+ $("catalog").querySelectorAll("[data-delete]").forEach(btn=>btn.addEventListener("click",()=>deleteBouquet(data.find(b=>String(b.id)===btn.dataset.delete))));
+}
+function editBouquet(b){if(!b)return;resetForm();$("bouquetId").value=b.id;$("name").value=b.name||"";$("description").value=b.description||"";$("category").value=b.category||"";$("price").value=b.price;$("order").value=b.display_order||0;$("active").checked=!!b.is_active;currentImageUrl=b.image_url||"";$("preview").src=currentImageUrl;$("preview").classList.toggle("hidden",!currentImageUrl);$("formTitle").textContent="Edit pre-built bouquet";$("saveBtn").textContent="Save bouquet changes";window.scrollTo({top:0,behavior:"smooth"});status("Editing "+b.name+". Choose a new image only if you want to replace the current photo.");}
+async function deleteBouquet(b){if(!b||!confirm(`Delete "${b.name}" from the pre-built catalog? This cannot be undone.`))return;const {error}=await client.from("prebuilt_bouquets").delete().eq("id",b.id);if(error){status("Delete failed: "+error.message,true);return;}status("Bouquet removed from the catalog.");await loadCatalog();}
+$("saveBtn").addEventListener("click",async()=>{
+ if(!isAdmin){status("Please sign in as an approved admin.",true);return;}
+ const name=$("name").value.trim(),description=$("description").value.trim(),category=$("category").value,price=Number($("price").value),display_order=Number.parseInt($("order").value||"0",10),is_active=$("active").checked,id=$("bouquetId").value;
+ if(!name){status("Enter a bouquet name.",true);return;}if(!category){status("Choose the category this bouquet belongs to.",true);return;}if($("price").value===""||!Number.isFinite(price)||price<0){status("Enter a valid non-negative price.",true);return;}
+ const file=$("imageFile").files[0];if(!file&&!currentImageUrl){status("Choose a bouquet image first.",true);return;}if(file&&file.size>8*1024*1024){status("Image must be 8 MB or smaller.",true);return;}
+ $("saveBtn").disabled=true;status("Uploading image and saving bouquet…");
+ try{
+  let image_url=currentImageUrl;
+  if(file){const ext=file.type==="image/png"?"png":file.type==="image/webp"?"webp":"jpg";const path=`${crypto.randomUUID()}.${ext}`;const {error:uploadError}=await client.storage.from(BUCKET).upload(path,file,{upsert:false,contentType:file.type,cacheControl:"3600"});if(uploadError)throw uploadError;const {data}=client.storage.from(BUCKET).getPublicUrl(path);image_url=data.publicUrl;}
+  const payload={name,description,category,price,image_url,is_active,display_order};
+  const result=id?await client.from("prebuilt_bouquets").update(payload).eq("id",id):await client.from("prebuilt_bouquets").insert(payload);
+  if(result.error)throw result.error;
+  resetForm();status("Saved successfully. Refresh the homepage to see the updated bouquet.");await loadCatalog();
+ }catch(e){status("Could not save bouquet: "+(e.message||String(e))+"\nCheck the Supabase SQL setup, Storage bucket, and admin access.",true);}
+ finally{$("saveBtn").disabled=false;}
+});
+client.auth.onAuthStateChange((_event,session)=>{if(!session)showLoggedOut();});
+checkAdmin().then(ok=>{if(!ok&&!$("status").textContent)status("Sign in to manage bouquet photos.");});
+
+
+
+
+
+setTimeout(()=>{
+    document.querySelectorAll('.isInViewport.animated').forEach(element => {
+    element.classList.remove('isInViewport', 'animated');
+});
+}, 500)
+</script>
+</body>
+</html>

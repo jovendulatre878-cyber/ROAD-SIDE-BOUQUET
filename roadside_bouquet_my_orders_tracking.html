@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Roadside Bouquet — My Orders</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+      :root {
+        --ink: #302630;
+        --muted: #817782;
+        --line: #f0e5ec;
+        --pink: #b84d78;
+        --pale: #fff2f7;
+        --bg: #fffafd;
+        --green: #267653;
+        --amber: #98651a;
+        --red: #a43b4a;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font:
+          15px/1.5 Inter,
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          sans-serif;
+      }
+      button,
+      input {
+        font: inherit;
+      }
+      .page {
+        max-width: 1000px;
+        margin: auto;
+        padding: 28px 18px 60px;
+      }
+      .hero {
+        background: linear-gradient(135deg, #fff0f6, #fff 70%);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        padding: 26px;
+        margin-bottom: 20px;
+      }
+      .brand {
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--pink);
+      }
+      h1 {
+        font-size: clamp(27px, 4vw, 38px);
+        line-height: 1.15;
+        margin: 7px 0;
+      }
+      .hero p {
+        color: var(--muted);
+        margin: 0;
+        max-width: 620px;
+      }
+      .panel {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 20px;
+        margin-bottom: 16px;
+      }
+      .panel h2 {
+        font-size: 18px;
+        margin: 0 0 12px;
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin: 12px 0;
+      }
+      .field label {
+        font-size: 12px;
+        font-weight: 800;
+        color: var(--muted);
+      }
+      input {
+        border: 1px solid #e4d8e1;
+        border-radius: 11px;
+        padding: 12px;
+        width: 100%;
+        outline-color: var(--pink);
+      }
+      .btn {
+        border: 0;
+        border-radius: 11px;
+        padding: 11px 16px;
+        font-weight: 750;
+        cursor: pointer;
+      }
+      .primary {
+        background: var(--pink);
+        color: #fff;
+      }
+      .secondary {
+        background: #fff0f5;
+        color: var(--pink);
+        border: 1px solid #f0cddd;
+      }
+      .row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .row .field {
+        flex: 1;
+        min-width: 220px;
+      }
+      .muted {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .error {
+        color: var(--red);
+        white-space: pre-wrap;
+        font-size: 13px;
+        margin-top: 10px;
+      }
+      .hidden {
+        display: none !important;
+      }
+      .orders {
+        display: grid;
+        gap: 14px;
+      }
+      .order {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 17px;
+      }
+      .orderhead {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: flex-start;
+        flex-wrap: wrap;
+      }
+      .orderid {
+        font-weight: 850;
+        font-size: 16px;
+      }
+      .meta {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 3px;
+      }
+      .pill {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: #f3edf2;
+        color: #655b65;
+        font-size: 11px;
+        font-weight: 850;
+      }
+      .pill.good {
+        background: #e8f6ee;
+        color: var(--green);
+      }
+      .pill.warn {
+        background: #fff4dd;
+        color: var(--amber);
+      }
+      .pill.bad {
+        background: #ffedf0;
+        color: var(--red);
+      }
+      .progress {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 5px;
+        margin: 20px 0 10px;
+      }
+      .step {
+        text-align: center;
+        position: relative;
+        color: #a79ba5;
+        font-size: 11px;
+      }
+      .dot {
+        width: 25px;
+        height: 25px;
+        border: 2px solid #e7dce5;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        margin: 0 auto 7px;
+        background: white;
+        font-size: 12px;
+      }
+      .step.done {
+        color: var(--green);
+        font-weight: 750;
+      }
+      .step.done .dot {
+        background: #e8f6ee;
+        border-color: #8bc8a6;
+        color: var(--green);
+      }
+      .step.current {
+        color: var(--pink);
+        font-weight: 850;
+      }
+      .step.current .dot {
+        background: var(--pink);
+        border-color: var(--pink);
+        color: white;
+      }
+      .step.cancelled {
+        color: var(--red);
+      }
+      .step.cancelled .dot {
+        background: #ffedf0;
+        border-color: #e5a3ad;
+        color: var(--red);
+      }
+      .details {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        background: #fffafd;
+        border-radius: 12px;
+        padding: 13px;
+        margin-top: 14px;
+      }
+      .detail-label {
+        color: var(--muted);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 800;
+      }
+      .detail-value {
+        font-weight: 650;
+        overflow-wrap: anywhere;
+      }
+      .total {
+        font-size: 17px;
+        font-weight: 850;
+      }
+      .empty {
+        text-align: center;
+        padding: 25px;
+        color: var(--muted);
+      }
+      footer {
+        text-align: center;
+        color: var(--muted);
+        font-size: 12px;
+        padding: 16px;
+      }
+      @media (max-width: 600px) {
+        .page {
+          padding: 14px 12px 35px;
+        }
+        .hero {
+          padding: 20px;
+        }
+        .panel {
+          padding: 15px;
+        }
+        .progress {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          row-gap: 14px;
+        }
+        .details {
+          grid-template-columns: 1fr;
+        }
+        .order {
+          padding: 13px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <div class="brand">🌷 Roadside Bouquet</div>
+        <h1>Track your order</h1>
+        <p>
+          Check your bouquet order progress, payment status, and delivery
+          details in one place.
+        </p>
+        <button id="backBtn" class="btn secondary" style="margin-top: 20px">
+          Go back
+        </button>
+      </section>
+      <section id="loginPanel" class="panel">
+        <h2>Sign in to view your orders</h2>
+        <p class="muted">
+          Use the same email and password you used when placing your order.
+        </p>
+        <div class="row">
+          <div class="field">
+            <label for="email">EMAIL ADDRESS</label
+            ><input
+              id="email"
+              type="email"
+              autocomplete="username"
+              placeholder="you@example.com"
+            />
+          </div>
+          <div class="field">
+            <label for="password">PASSWORD</label
+            ><input
+              id="password"
+              type="password"
+              autocomplete="current-password"
+              placeholder="Your password"
+            />
+          </div>
+        </div>
+        <div class="row">
+          <button id="loginBtn" class="btn primary">
+            Sign in and view orders</button
+          ><button id="logoutBtn" class="btn secondary hidden">Sign out</button>
+        </div>
+        <div id="loginMsg" class="error"></div>
+      </section>
+      <section id="ordersPanel" class="panel hidden">
+        <div class="row" style="justify-content: space-between">
+          <div>
+            <h2 style="margin-bottom: 3px">My orders</h2>
+            <div id="welcome" class="muted"></div>
+          </div>
+          <button id="refreshBtn" class="btn secondary">Refresh status</button>
+        </div>
+        <div id="ordersMsg" class="error"></div>
+        <div id="ordersList" class="orders"></div>
+      </section>
+      <footer>Roadside Bouquet · Order tracking</footer>
+    </main>
+    <script>
+      const SUPABASE_URL = "https://mfgsuppsxqukymxafmde.supabase.co";
+      const SUPABASE_ANON_KEY =
+        "sb_publishable_QftaNSdWPgOi7ql2575Dzw_ML5D4xnv";
+      const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      const $ = (id) => document.getElementById(id);
+      const esc = (v) =>
+        String(v ?? "").replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+      const money = (v) =>
+        new Intl.NumberFormat("en-PH", {
+          style: "currency",
+          currency: "PHP",
+        }).format(Number(v) || 0);
+      const pretty = (v) =>
+        String(v ?? "—")
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, (c) => c.toUpperCase());
+      const datefmt = (v) => {
+        if (!v) return "—";
+        const d = new Date(v);
+        return isNaN(d)
+          ? String(v)
+          : d.toLocaleString("en-PH", {
+              dateStyle: "medium",
+              timeStyle: "short",
+            });
+      };
+      const steps = [
+        ["confirmed", "Confirmed"],
+        ["preparing", "Preparing"],
+        ["ready", "Ready"],
+        ["out_for_delivery", "Out for delivery"],
+        ["completed", "Completed"],
+      ];
+      function pill(status) {
+        const s = String(status || "pending");
+        const cls = ["paid", "completed"].includes(s)
+          ? "good"
+          : ["cancelled", "failed", "refunded"].includes(s)
+            ? "bad"
+            : "warn";
+        return `<span class="pill ${cls}">${esc(pretty(s))}</span>`;
+      }
+      function progress(status) {
+        if (status === "cancelled")
+          return `<div class="progress"><div class="step cancelled"><div class="dot">×</div>Cancelled</div></div>`;
+        const current = steps.findIndex((x) => x[0] === status);
+        return `<div class="progress">${steps
+          .map((s, i) => {
+            const done = current >= 0 && i < current,
+              now = i === current;
+            return `<div class="step ${done ? "done" : ""} ${now ? "current" : ""}"><div class="dot">${done ? "✓" : i + 1}</div>${esc(s[1])}</div>`;
+          })
+          .join("")}</div>`;
+      }
+      function detail(label, value) {
+        return `<div><div class="detail-label">${esc(label)}</div><div class="detail-value">${esc(value || "—")}</div></div>`;
+      }
+      function renderOrders(data) {
+        if (!data.length) {
+          $("ordersList").innerHTML =
+            '<div class="empty">No orders found for this account yet.</div>';
+          return;
+        }
+        $("ordersList").innerHTML = data
+          .map(
+            (o) =>
+              `<article class="order"><div class="orderhead"><div><div class="orderid">Order #${esc(String(o.id).slice(0, 8))}</div><div class="meta">Placed ${esc(datefmt(o.created_at))}</div></div><div>${pill(o.order_status || "pending")}</div></div>${progress(o.order_status || "pending")}<div class="details">${detail("Payment method", pretty(o.payment_method))}${detail("Payment status", pretty(o.payment_status))}${detail("Delivery address", o.delivery_address)}${detail("Phone", o.phone)}${detail("Order total", money(o.total_price))}${detail("Notes", o.notes)}</div></article>`,
+          )
+          .join("");
+      }
+      async function loadOrders() {
+        const {
+          data: { user },
+          error: authErr,
+        } = await db.auth.getUser();
+        if (authErr || !user) {
+          $("ordersMsg").textContent =
+            "Please sign in again to view your orders.";
+          return;
+        }
+        $("ordersMsg").textContent = "Loading your orders…";
+        const { data, error } = await db
+          .from("bouquet_orders")
+          .select(
+            "id,created_at,order_status,payment_method,payment_status,delivery_address,phone,total_price,notes,user_id",
+          )
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
+        if (error) {
+          $("ordersMsg").textContent =
+            "Could not load orders: " +
+            error.message +
+            "\\nCheck that the buyer can read only their own rows in the bouquet_orders RLS policy.";
+          return;
+        }
+        $("ordersMsg").textContent = "";
+        renderOrders(data || []);
+      }
+      async function showSession() {
+        const {
+          data: { session },
+        } = await db.auth.getSession();
+        if (session) {
+          $("loginPanel").classList.add("hidden");
+          $("ordersPanel").classList.remove("hidden");
+          $("logoutBtn").classList.remove("hidden");
+          $("welcome").textContent = session.user.email || "Signed in";
+          await loadOrders();
+        } else {
+          $("loginPanel").classList.remove("hidden");
+          $("ordersPanel").classList.add("hidden");
+          $("logoutBtn").classList.add("hidden");
+        }
+      }
+      $("loginBtn").onclick = async () => {
+        $("loginMsg").textContent = "Signing in…";
+        const { error } = await db.auth.signInWithPassword({
+          email: $("email").value.trim(),
+          password: $("password").value,
+        });
+        if (error) {
+          $("loginMsg").textContent = error.message;
+          return;
+        }
+        $("loginMsg").textContent = "";
+        await showSession();
+      };
+      $("password").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") $("loginBtn").click();
+      });
+      $("logoutBtn").onclick = async () => {
+        await db.auth.signOut();
+        $("loginMsg").textContent = "You have signed out.";
+        await showSession();
+      };
+      $("refreshBtn").onclick = loadOrders;
+
+      $("backBtn").onclick = async () => {
+        window.location.replace("roadside_bouquet_builder_live_chat.html");
+      };
+
+      showSession();
+    </script>
+  </body>
+</html>

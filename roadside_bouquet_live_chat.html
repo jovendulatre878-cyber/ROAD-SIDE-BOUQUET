@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#55998d" />
+    <title>Roadside Bouquet | Live Chat</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+      :root {
+        --teal: #55998d;
+        --dark: #36786e;
+        --ink: #263b38;
+        --muted: #7c8d88;
+        --line: #e4ebe5;
+        --bg: #f5f8f3;
+        --rose: #b96779;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font:
+          14px/1.5 Inter,
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          sans-serif;
+      }
+      .shell {
+        max-width: 900px;
+        margin: 28px auto;
+        padding: 0 16px;
+      }
+      .top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+      .brand {
+        font:
+          700 25px Georgia,
+          serif;
+      }
+      .brand span {
+        color: var(--teal);
+      }
+      .btn {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 9px 13px;
+        background: #fff;
+        color: var(--ink);
+        font: inherit;
+        font-weight: 650;
+        cursor: pointer;
+        text-decoration: none;
+      }
+      .btn.primary {
+        background: var(--teal);
+        border-color: var(--teal);
+        color: #fff;
+      }
+      .card {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 16px 45px #23423b0b;
+      }
+      .head {
+        padding: 18px 20px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
+      .head h1 {
+        font:
+          700 21px Georgia,
+          serif;
+        margin: 0;
+      }
+      .head p {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .status {
+        font-size: 12px;
+        color: var(--dark);
+        background: #edf5f0;
+        border-radius: 99px;
+        padding: 6px 10px;
+      }
+      .messages {
+        height: min(62vh, 620px);
+        min-height: 320px;
+        overflow: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        background: #fcfdfb;
+      }
+      .bubble {
+        max-width: min(78%, 560px);
+        padding: 11px 13px;
+        border-radius: 15px;
+        background: #fff;
+        border: 1px solid var(--line);
+        overflow-wrap: anywhere;
+        align-self: flex-start;
+      }
+      .bubble.mine {
+        align-self: flex-end;
+        background: #eaf5f0;
+        border-color: #d2e7dd;
+      }
+      .bubble small {
+        display: block;
+        color: var(--muted);
+        font-size: 10px;
+        margin-top: 6px;
+      }
+      .compose {
+        display: flex;
+        gap: 10px;
+        padding: 14px;
+        border-top: 1px solid var(--line);
+        align-items: end;
+      }
+      .compose textarea {
+        min-width: 0;
+        flex: 1;
+        resize: vertical;
+        min-height: 46px;
+        max-height: 140px;
+        border: 1px solid #dce7e0;
+        border-radius: 11px;
+        padding: 12px;
+        font: inherit;
+      }
+      .compose-tools {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .image-btn {
+        white-space: nowrap;
+      }
+      .image-preview {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 0 14px 12px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .image-preview img {
+        width: 58px;
+        height: 58px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+      }
+      .chat-image {
+        display: block;
+        max-width: 100%;
+        max-height: 320px;
+        object-fit: contain;
+        border-radius: 10px;
+        margin-top: 7px;
+        cursor: pointer;
+      }
+      .compose button:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+      .notice {
+        padding: 0 16px 14px;
+        color: #9a4960;
+        font-size: 12px;
+        white-space: pre-wrap;
+      }
+      .empty {
+        margin: auto;
+        text-align: center;
+        color: var(--muted);
+        padding: 25px;
+      }
+      .hidden {
+        display: none !important;
+      }
+      @media (max-width: 560px) {
+        .shell {
+          margin: 14px auto;
+          padding: 0 10px;
+        }
+        .head {
+          padding: 15px;
+        }
+        .messages {
+          padding: 13px;
+          min-height: 300px;
+          height: 58vh;
+        }
+        .bubble {
+          max-width: 90%;
+        }
+        .brand {
+          font-size: 22px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <div class="top">
+        <div class="brand">Roadside<span>.</span></div>
+        <a
+          class="btn"
+          href="roadside_bouquet_builder_live_chat.html"
+          id="backBtn"
+          >← Bouquet Builder</a
+        >
+      </div>
+      <section class="card">
+        <div class="head">
+          <div>
+            <h1>Live Chat with Roadside</h1>
+            <p id="buyerLabel">Connect with our shop admin.</p>
+          </div>
+          <span class="status" id="connectionStatus">Connecting…</span>
+        </div>
+        <div id="messages" class="messages">
+          <div class="empty">Loading your conversation…</div>
+        </div>
+        <form id="composeForm" class="compose">
+          <textarea
+            id="messageInput"
+            maxlength="3000"
+            placeholder="Type your message…"
+            aria-label="Your message"
+            disabled
+          ></textarea>
+          <div class="compose-tools">
+            <label class="btn image-btn" for="imageInput">＋ Photo</label
+            ><input
+              id="imageInput"
+              type="file"
+              accept="image/*"
+              class="hidden"
+              disabled
+            /><button id="sendBtn" class="btn primary" type="submit" disabled>
+              Send
+            </button>
+          </div>
+        </form>
+        <div id="imagePreview" class="image-preview hidden"></div>
+        <div id="notice" class="notice" role="status"></div>
+      </section>
+    </main>
+    <script>
+      const SUPABASE_URL = "https://mfgsuppsxqukymxafmde.supabase.co";
+      const SUPABASE_PUBLISHABLE_KEY =
+        "sb_publishable_QftaNSdWPgOi7ql2575Dzw_ML5D4xnv";
+      const db = window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_PUBLISHABLE_KEY,
+      );
+      const $ = (id) => document.getElementById(id);
+      let currentUser = null,
+        conversation = null,
+        messageChannel = null,
+        selectedImage = null;
+      const esc = (v) =>
+        String(v ?? "").replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+      const fmt = (v) => {
+        const d = new Date(v);
+        return isNaN(d)
+          ? ""
+          : d.toLocaleString("en-PH", {
+              month: "short",
+              day: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+            });
+      };
+      function notice(s) {
+        $("notice").textContent = s;
+      }
+      async function init() {
+        const { data, error } = await db.auth.getUser();
+        if (error || !data?.user) {
+          window.location.replace("login.html");
+          return;
+        }
+        currentUser = data.user;
+        const buyerName =
+          currentUser.user_metadata?.full_name ||
+          currentUser.user_metadata?.name ||
+          currentUser.email?.split("@")[0] ||
+          "Buyer";
+        $("buyerLabel").textContent =
+          "Signed in as " + (currentUser.email || buyerName);
+        let result = await db
+          .from("chat_conversations")
+          .select("*")
+          .eq("buyer_id", currentUser.id)
+          .maybeSingle();
+        if (result.error) {
+          $("messages").innerHTML =
+            '<div class="empty">Chat setup is not complete. Run the Live Chat SQL file in Supabase, then reload.<br>' +
+            esc(result.error.message) +
+            "</div>";
+          $("connectionStatus").textContent = "Setup needed";
+          return;
+        }
+        conversation = result.data;
+        if (!conversation) {
+          const { data: created, error: createError } = await db
+            .from("chat_conversations")
+            .insert({
+              buyer_id: currentUser.id,
+              buyer_name: buyerName,
+              buyer_email: currentUser.email || null,
+            })
+            .select("*")
+            .single();
+          if (createError) {
+            $("messages").innerHTML =
+              '<div class="empty">Could not start chat: ' +
+              esc(createError.message) +
+              "</div>";
+            $("connectionStatus").textContent = "Unavailable";
+            return;
+          }
+          conversation = created;
+        }
+        $("messageInput").disabled = false;
+        $("imageInput").disabled = false;
+        $("sendBtn").disabled = false;
+        $("connectionStatus").textContent = "Connected";
+        await loadMessages();
+        await db
+          .from("chat_conversations")
+          .update({ buyer_unread_count: 0 })
+          .eq("id", conversation.id);
+        startRealtime();
+      }
+      async function loadMessages() {
+        const { data, error } = await db
+          .from("chat_messages")
+          .select("*")
+          .eq("conversation_id", conversation.id)
+          .order("created_at", { ascending: true });
+        if (error) {
+          notice("Unable to load messages: " + error.message);
+          return;
+        }
+        const rendered = await Promise.all(
+          (data || []).map(async (m) => {
+            let photo = "";
+            if (m.image_path) {
+              const { data: link } = await db.storage
+                .from("chat-images")
+                .createSignedUrl(m.image_path, 3600);
+              if (link?.signedUrl)
+                photo = `<a href="${esc(link.signedUrl)}" target="_blank" rel="noopener"><img class="chat-image" src="${esc(link.signedUrl)}" alt="Chat image" loading="lazy"></a>`;
+              else photo = "<div>📷 Image unavailable</div>";
+            }
+            return `<div class="bubble ${m.sender_role === "buyer" ? "mine" : ""}">${m.message ? esc(m.message).replace(/\\n/g, "<br>") : ""}${photo}<small>${m.sender_role === "buyer" ? "You" : "Roadside Admin"} · ${esc(fmt(m.created_at))}${m.sender_role === "buyer" && m.read_at ? " · Read" : ""}</small></div>`;
+          }),
+        );
+        $("messages").innerHTML =
+          rendered.join("") ||
+          '<div class="empty">No messages yet. Send us a message and our admin will reply here.</div>';
+        $("messages").scrollTop = $("messages").scrollHeight;
+      }
+      function startRealtime() {
+        if (messageChannel) db.removeChannel(messageChannel);
+        messageChannel = db
+          .channel("buyer-chat-" + conversation.id)
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "chat_messages",
+              filter: "conversation_id=eq." + conversation.id,
+            },
+            async (payload) => {
+              await loadMessages();
+              if (payload.new?.sender_role === "admin") {
+                await db
+                  .from("chat_conversations")
+                  .update({ buyer_unread_count: 0 })
+                  .eq("id", conversation.id);
+              }
+            },
+          )
+          .subscribe();
+      }
+      $("imageInput").addEventListener("change", () => {
+        selectedImage = $("imageInput").files?.[0] || null;
+        const preview = $("imagePreview");
+        if (!selectedImage) {
+          preview.classList.add("hidden");
+          preview.innerHTML = "";
+          return;
+        }
+        if (!selectedImage.type.startsWith("image/")) {
+          notice("Please choose an image file.");
+          selectedImage = null;
+          $("imageInput").value = "";
+          preview.classList.add("hidden");
+          return;
+        }
+        if (selectedImage.size > 8 * 1024 * 1024) {
+          notice("Image is too large. Please choose an image under 8 MB.");
+          selectedImage = null;
+          $("imageInput").value = "";
+          preview.classList.add("hidden");
+          return;
+        }
+        preview.innerHTML = `<img src="${URL.createObjectURL(selectedImage)}" alt="Selected image preview"><span>${esc(selectedImage.name)} · ${(selectedImage.size / 1024 / 1024).toFixed(2)} MB</span><button type="button" class="btn" id="removeImageBtn">Remove</button>`;
+        preview.classList.remove("hidden");
+        $("removeImageBtn").onclick = () => {
+          $("imageInput").value = "";
+          selectedImage = null;
+          preview.classList.add("hidden");
+          preview.innerHTML = "";
+        };
+      });
+      $("composeForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const message = $("messageInput").value.trim();
+        if ((!message && !selectedImage) || !conversation || !currentUser)
+          return;
+        $("sendBtn").disabled = true;
+        $("imageInput").disabled = true;
+        notice("");
+        let image_path = null;
+        if (selectedImage) {
+          const ext =
+            (selectedImage.name.split(".").pop() || "jpg")
+              .toLowerCase()
+              .replace(/[^a-z0-9]/g, "") || "jpg";
+          image_path = `${conversation.id}/${crypto.randomUUID()}.${ext}`;
+          const { error: uploadError } = await db.storage
+            .from("chat-images")
+            .upload(image_path, selectedImage, {
+              contentType: selectedImage.type,
+              upsert: false,
+            });
+          if (uploadError) {
+            notice("Image upload failed: " + uploadError.message);
+            $("sendBtn").disabled = false;
+            $("imageInput").disabled = false;
+            return;
+          }
+        }
+        const { error } = await db
+          .from("chat_messages")
+          .insert({
+            conversation_id: conversation.id,
+            sender_id: currentUser.id,
+            sender_role: "buyer",
+            message: message || "📷 Image",
+            image_path,
+          });
+        $("sendBtn").disabled = false;
+        $("imageInput").disabled = false;
+        if (error) {
+          notice("Message not sent: " + error.message);
+          return;
+        }
+        $("messageInput").value = "";
+        $("imageInput").value = "";
+        selectedImage = null;
+        $("imagePreview").classList.add("hidden");
+        $("imagePreview").innerHTML = "";
+        await loadMessages();
+      });
+      init();
+    </script>
+  </body>
+</html>

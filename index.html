@@ -1,0 +1,787 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#fbf7f2" />
+    <title>Roadside Bouquet | Thoughtful Flowers</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+      :root {
+        --ink: #352d2c;
+        --muted: #796d69;
+        --rose: #a94f65;
+        --rose-dark: #863b50;
+        --cream: #fbf7f2;
+        --line: #eadfd8;
+        --green: #526a52;
+        --shadow: 0 12px 32px rgba(69, 43, 42, 0.08);
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background: var(--cream);
+        color: var(--ink);
+        font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+      }
+
+      img {
+        display: block;
+        max-width: 100%;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+
+      .wrap {
+        width: min(1160px, calc(100% - 40px));
+        margin-inline: auto;
+      }
+
+      /* Header */
+      .nav {
+        min-height: 76px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+      }
+
+      .brand {
+        flex: 0 0 auto;
+        color: var(--green);
+        font: 700 24px Georgia, serif;
+      }
+
+      .navlinks {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 20px;
+        font-size: 14px;
+      }
+
+      /* Buttons */
+      .btn {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 20px;
+        border: 1px solid transparent;
+        border-radius: 999px;
+        background: var(--rose);
+        color: #fff;
+        font-weight: 700;
+        line-height: 1.2;
+        text-align: center;
+        cursor: pointer;
+        transition: background 0.2s ease, transform 0.2s ease;
+      }
+
+      .btn:hover {
+        background: var(--rose-dark);
+        transform: translateY(-1px);
+      }
+
+      .btn.secondary {
+        border-color: var(--line);
+        background: #fff;
+        color: var(--rose-dark);
+      }
+
+      .btn.secondary:hover {
+        background: #fbefef;
+      }
+
+      .btn:focus-visible,
+      .category-card:focus-visible,
+      a:focus-visible,
+      input:focus-visible,
+      select:focus-visible {
+        outline: 3px solid rgba(169, 79, 101, 0.28);
+        outline-offset: 3px;
+      }
+
+      /* Hero */
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
+        align-items: center;
+        gap: 42px;
+        padding: 35px 0 58px;
+      }
+
+      .eyebrow {
+        color: var(--rose);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.19em;
+        text-transform: uppercase;
+      }
+
+      .hero h1 {
+        margin: 14px 0;
+        font: 500 clamp(38px, 5vw, 64px)/1.05 Georgia, serif;
+        letter-spacing: -0.03em;
+      }
+
+      .hero p {
+        max-width: 500px;
+        color: var(--muted);
+        line-height: 1.8;
+      }
+
+      .heroimg {
+        width: 100%;
+        height: 430px;
+        border-radius: 28px;
+        object-fit: cover;
+        box-shadow: var(--shadow);
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 24px;
+      }
+
+      /* Sections */
+      .section {
+        padding: 36px 0 62px;
+      }
+
+      .section-head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 22px;
+      }
+
+      .section h2,
+      .custom h2 {
+        margin: 8px 0;
+        font: 500 clamp(28px, 3vw, 38px)/1.15 Georgia, serif;
+      }
+
+      .sub {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.65;
+      }
+
+      /* Category selector */
+      .category-area {
+        margin: 24px 0 28px;
+      }
+
+      .category-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+        gap: 14px;
+      }
+
+      .category-card {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: #fff;
+        color: var(--ink);
+        font-family: inherit;
+        text-align: left;
+        cursor: pointer;
+        transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .category-card:hover,
+      .category-card.active {
+        border-color: var(--rose);
+        box-shadow: var(--shadow);
+        transform: translateY(-2px);
+      }
+
+      .category-card img {
+        width: 100%;
+        height: 112px;
+        border-radius: 10px;
+        background: #f3ece7;
+        object-fit: cover;
+      }
+
+      .category-card strong {
+        font-size: 14px;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+      }
+
+      .category-card small {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      /* Search and filters */
+      .catalog-controls {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(180px, 240px) auto;
+        align-items: stretch;
+        gap: 12px;
+        margin: 18px 0;
+      }
+
+      .catalog-controls input,
+      .catalog-controls select {
+        width: 100%;
+        min-width: 0;
+        min-height: 46px;
+        padding: 12px 14px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #fff;
+        color: var(--ink);
+      }
+
+      .catalog-note {
+        margin: 0 0 14px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      /* Bouquet cards */
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 22px;
+      }
+
+      .card {
+        min-width: 0;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        background: #fff;
+        box-shadow: var(--shadow);
+      }
+
+      .card img {
+        width: 100%;
+        height: 250px;
+        background: #eee;
+        object-fit: cover;
+      }
+
+      .cardbody {
+        padding: 18px;
+      }
+
+      .card h3 {
+        margin: 0 0 8px;
+        font: 500 23px Georgia, serif;
+        overflow-wrap: anywhere;
+      }
+
+      .card p {
+        min-height: 42px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.65;
+      }
+
+      .price {
+        margin: 12px 0 16px;
+        font-size: 17px;
+        font-weight: 800;
+      }
+
+      .card .btn {
+        width: 100%;
+      }
+
+      .loading,
+      .empty {
+        grid-column: 1 / -1;
+        padding: 32px;
+        border: 1px dashed #d8c9c1;
+        border-radius: 18px;
+        background: #fff;
+        color: var(--muted);
+        text-align: center;
+      }
+
+      /* Custom bouquet callout and footer */
+      .custom {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 22px;
+        padding: 30px;
+        border-radius: 24px;
+        background: #edf3ed;
+      }
+
+      .custom h2 {
+        margin-top: 0;
+      }
+
+      .footer {
+        padding: 25px 0;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      /* Tablet */
+      @media (max-width: 900px) {
+        .hero {
+          gap: 26px;
+        }
+
+        .grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 16px;
+        }
+
+        .catalog-controls {
+          grid-template-columns: minmax(0, 1fr) minmax(160px, 220px);
+        }
+
+        .catalog-controls .btn {
+          grid-column: 1 / -1;
+        }
+      }
+
+      /* Mobile */
+      @media (max-width: 640px) {
+        .wrap {
+          width: min(100% - 28px, 1160px);
+        }
+
+        .nav {
+          min-height: auto;
+          padding: 18px 0;
+          align-items: flex-start;
+        }
+
+        .brand {
+          font-size: 20px;
+        }
+
+        .navlinks {
+          gap: 10px;
+          font-size: 12px;
+        }
+
+        .navlinks .optional {
+          display: none;
+        }
+
+        .hero {
+          grid-template-columns: 1fr;
+          gap: 22px;
+          padding: 20px 0 38px;
+        }
+
+        .heroimg {
+          height: 300px;
+          border-radius: 20px;
+        }
+
+        .section {
+          padding: 28px 0 44px;
+        }
+
+        .category-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 10px;
+        }
+
+        .category-card img {
+          height: 100px;
+        }
+
+        .catalog-controls {
+          grid-template-columns: 1fr;
+        }
+
+        .catalog-controls .btn {
+          grid-column: auto;
+        }
+
+        .grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 12px;
+        }
+
+        .card img {
+          height: 180px;
+        }
+
+        .cardbody {
+          padding: 13px;
+        }
+
+        .card h3 {
+          font-size: 19px;
+        }
+
+        .custom {
+          align-items: flex-start;
+          flex-direction: column;
+          padding: 24px;
+        }
+      }
+
+      @media (max-width: 420px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        .card img {
+          height: 240px;
+        }
+
+        .actions .btn {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="wrap nav">
+      <a class="brand" href="index.html">✿ Roadside Bouquet</a>
+      <nav class="navlinks">
+        <a href="#bouquets">Bouquets</a
+        ><a class="optional" href="#custom">Custom Design</a
+        >
+        <!-- <a class="btn secondary" href="login.html">Buyer Login</a> -->
+      </nav>
+    </header>
+    <main>
+      <section class="wrap hero">
+        <div>
+          <div class="eyebrow">Thoughtfully chosen · Beautifully bundled</div>
+          <h1>Flowers that say it beautifully.</h1>
+          <p>
+            Find a bouquet for your special moment, choose a ready-made design,
+            or create an arrangement that feels uniquely yours.
+          </p>
+          <div class="actions">
+            <a class="btn" href="#bouquets">Explore Bouquets</a
+            ><a
+              class="btn secondary"
+              href="roadside_bouquet_builder_live_chat.html"
+              >Build Your Own</a
+            >
+          </div>
+        </div>
+        <img
+          class="heroimg"
+          src="https://images.unsplash.com/photo-1525310072745-f49212b5ac6d?auto=format&fit=crop&w=1200&q=85"
+          alt="Beautiful floral bouquet"
+        />
+      </section>
+      <section class="wrap section" id="bouquets">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Ready-made favorites</div>
+            <h2>Pre-built Bouquets</h2>
+            <div class="sub">Choose a design from our collection.</div>
+          </div>
+        </div>
+        <div class="category-area">
+          <div
+            class="category-grid"
+            id="categoryGrid"
+            aria-label="Bouquet categories"
+          >
+            <div class="loading">Loading categories…</div>
+          </div>
+          <div class="catalog-controls">
+            <input
+              id="bouquetSearch"
+              type="search"
+              placeholder="Search bouquet name or description..."
+              aria-label="Search bouquets"
+            />
+            <select id="categoryFilter" aria-label="Filter by category">
+              <option value="">All categories</option>
+            </select>
+            <button class="btn secondary" id="clearFilters" type="button">
+              Clear filters
+            </button>
+          </div>
+          <p class="catalog-note" id="catalogNote" aria-live="polite">
+            Loading bouquet collection…
+          </p>
+        </div>
+        <div class="grid" id="bouquetGrid">
+          <div class="loading">Loading bouquet collection…</div>
+        </div>
+      </section>
+      <section class="wrap section" id="custom">
+        <div class="custom">
+          <div>
+            <div class="eyebrow">Make it personal</div>
+            <h2>Create your own bouquet</h2>
+            <p class="sub">
+              Choose your flowers, fillers, and wrapping in our bouquet builder.
+            </p>
+          </div>
+          <a class="btn" href="roadside_bouquet_builder_live_chat.html"
+            >Start Designing</a
+          >
+        </div>
+      </section>
+    </main>
+    <footer class="wrap footer">
+      © <span id="year"></span> Roadside Bouquet Builder. Made with love.
+    </footer>
+    <script>
+      const SUPABASE_URL = "https://mfgsuppsxqukymxafmde.supabase.co";
+      const SUPABASE_PUBLISHABLE_KEY =
+        "sb_publishable_QftaNSdWPgOi7ql2575Dzw_ML5D4xnv";
+      const supabaseClient = window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_PUBLISHABLE_KEY,
+      );
+      document.getElementById("year").textContent = new Date().getFullYear();
+      const money = (n) =>
+        new Intl.NumberFormat("en-PH", {
+          style: "currency",
+          currency: "PHP",
+          maximumFractionDigits: 2,
+        }).format(Number(n) || 0);
+      function makeCard(item) {
+        const article = document.createElement("article");
+        article.className = "card";
+        const img = document.createElement("img");
+        img.src = item.image_url || "";
+        img.alt = item.name || "Pre-built bouquet";
+        img.loading = "lazy";
+        img.onerror = () => {
+          img.onerror = null;
+          img.src =
+            "https://images.unsplash.com/photo-1494972308805-463bc619d34e?auto=format&fit=crop&w=1000&q=80";
+        };
+
+        const body = document.createElement("div");
+        body.className = "cardbody";
+        const h = document.createElement("h3");
+        h.textContent = item.name || "Bouquet";
+        const p = document.createElement("p");
+        p.textContent =
+          item.description ||
+          "A thoughtfully arranged bouquet for a special moment.";
+        const price = document.createElement("div");
+        price.className = "price";
+        price.textContent = money(item.price);
+        const category = document.createElement("div");
+        category.className = "catalog-note";
+        category.textContent = item.category || "Other Bouquets";
+        const btn = document.createElement("a");
+        btn.className = "btn";
+        btn.textContent = "Choose Bouquet";
+        btn.href = "checkout.html?preset=" + encodeURIComponent(item.id);
+        body.append(h, p, category, price, btn);
+        article.append(img, body);
+        return article;
+      }
+
+      const catalogState = {
+        bouquets: [],
+        activeCategory: "",
+        query: "",
+      };
+
+      const categoryGrid = document.getElementById("categoryGrid");
+      const categoryFilter = document.getElementById("categoryFilter");
+      const searchInput = document.getElementById("bouquetSearch");
+      const catalogNote = document.getElementById("catalogNote");
+      const bouquetGrid = document.getElementById("bouquetGrid");
+
+      function getCategory(item) {
+        const value = String(item.category || "").trim();
+        return value || "Other Bouquets";
+      }
+
+      function renderCategories() {
+        const counts = new Map();
+        catalogState.bouquets.forEach((item) => {
+          const category = getCategory(item);
+          counts.set(category, (counts.get(category) || 0) + 1);
+        });
+        const categories = [...counts.keys()].sort((a, b) =>
+          a.localeCompare(b),
+        );
+
+        categoryGrid.replaceChildren();
+        if (!categories.length) {
+          categoryGrid.innerHTML =
+            '<div class="empty">No bouquet categories available yet.</div>';
+          return;
+        }
+
+        categories.forEach((categoryName) => {
+          const firstBouquet = catalogState.bouquets.find(
+            (item) => getCategory(item) === categoryName && item.image_url,
+          );
+          const card = document.createElement("button");
+          card.type = "button";
+          card.className =
+            "category-card" +
+            (catalogState.activeCategory === categoryName ? " active" : "");
+          card.setAttribute(
+            "aria-pressed",
+            String(catalogState.activeCategory === categoryName),
+          );
+
+          const image = document.createElement("img");
+          image.src =
+            firstBouquet?.image_url ||
+            "https://images.unsplash.com/photo-1525310072745-f49212b5ac6d?auto=format&fit=crop&w=500&q=80";
+          image.alt = categoryName;
+          image.loading = "lazy";
+          image.onerror = () => {
+            image.onerror = null;
+            image.src =
+              "https://images.unsplash.com/photo-1494972308805-463bc619d34e?auto=format&fit=crop&w=500&q=80";
+          };
+
+          const title = document.createElement("strong");
+          title.textContent = categoryName;
+          const count = document.createElement("small");
+          count.textContent = `${counts.get(categoryName)} ${counts.get(categoryName) === 1 ? "bouquet" : "bouquets"}`;
+          card.append(image, title, count);
+          card.addEventListener("click", () => {
+            catalogState.activeCategory =
+              catalogState.activeCategory === categoryName ? "" : categoryName;
+            categoryFilter.value = catalogState.activeCategory;
+            renderCategories();
+            renderBouquets();
+          });
+          categoryGrid.appendChild(card);
+        });
+      }
+
+      document.addEventListener("keydown", function (event) {
+        if (
+          event.key === "F12" ||
+          (event.ctrlKey &&
+            event.shiftKey &&
+            ["I", "J", "C"].includes(event.key.toUpperCase())) ||
+          (event.ctrlKey && event.key.toUpperCase() === "U")
+        ) {
+          event.preventDefault();
+        }
+      });
+
+      document.addEventListener("contextmenu", function (event) {
+        event.preventDefault();
+      });
+
+      function populateCategoryFilter() {
+        const current = catalogState.activeCategory;
+        const categories = [
+          ...new Set(catalogState.bouquets.map(getCategory)),
+        ].sort((a, b) => a.localeCompare(b));
+        categoryFilter.replaceChildren(new Option("All categories", ""));
+        categories.forEach((name) =>
+          categoryFilter.add(new Option(name, name)),
+        );
+        categoryFilter.value = categories.includes(current) ? current : "";
+      }
+
+      function renderBouquets() {
+        const query = catalogState.query.trim().toLowerCase();
+        const category = catalogState.activeCategory;
+        const items = catalogState.bouquets.filter((item) => {
+          const matchesCategory = !category || getCategory(item) === category;
+          const searchable =
+            `${item.name || ""} ${item.description || ""} ${getCategory(item)}`.toLowerCase();
+          return matchesCategory && searchable.includes(query);
+        });
+
+        bouquetGrid.replaceChildren();
+        if (!items.length) {
+          bouquetGrid.innerHTML =
+            '<div class="empty">No bouquets match your selected category or search.</div>';
+        } else {
+          items.forEach((item) => bouquetGrid.appendChild(makeCard(item)));
+        }
+        catalogNote.textContent = `${items.length} ${items.length === 1 ? "bouquet" : "bouquets"} shown`;
+      }
+
+      searchInput.addEventListener("input", () => {
+        catalogState.query = searchInput.value;
+        renderBouquets();
+      });
+
+      categoryFilter.addEventListener("change", () => {
+        catalogState.activeCategory = categoryFilter.value;
+        renderCategories();
+        renderBouquets();
+      });
+
+      document.getElementById("clearFilters").addEventListener("click", () => {
+        catalogState.activeCategory = "";
+        catalogState.query = "";
+        searchInput.value = "";
+        categoryFilter.value = "";
+        renderCategories();
+        renderBouquets();
+      });
+
+      (async () => {
+        try {
+          const { data, error } = await supabaseClient
+            .from("prebuilt_bouquets")
+            .select(
+              "id,name,description,price,image_url,category,is_active,display_order",
+            )
+            .eq("is_active", true)
+            .order("display_order", { ascending: true });
+          if (error) throw error;
+
+          catalogState.bouquets = data || [];
+          populateCategoryFilter();
+          renderCategories();
+          renderBouquets();
+        } catch (e) {
+          console.error("Could not load bouquet catalog:", e);
+          categoryGrid.innerHTML =
+            '<div class="empty">Unable to load bouquet categories. Please check the Supabase catalog setup.</div>';
+          bouquetGrid.innerHTML =
+            '<div class="empty">Unable to load bouquets right now. Please check the Supabase catalog setup and try again.</div>';
+          catalogNote.textContent = "Catalog could not be loaded.";
+        }
+      })();
+    </script>
+  </body>
+</html>
+

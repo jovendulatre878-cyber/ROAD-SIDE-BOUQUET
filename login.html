@@ -1,0 +1,886 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f8f3ed" />
+    <title>Buyer Login | Roadside Bouquet Builder</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+      :root {
+        --ink: #352d2c;
+        --muted: #7b706d;
+        --rose: #a94f65;
+        --rose-dark: #863b50;
+        --rose-pale: #f7e9e9;
+        --cream: #fbf7f2;
+        --green: #526a52;
+        --line: #e9ded7;
+        --white: #fff;
+        --shadow: 0 22px 65px rgba(69, 43, 42, 0.12);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        padding: 32px 18px;
+        display: grid;
+        place-items: center;
+        color: var(--ink);
+        background:
+          radial-gradient(
+            circle at 12% 18%,
+            rgba(229, 187, 192, 0.42),
+            transparent 29%
+          ),
+          radial-gradient(
+            circle at 88% 85%,
+            rgba(198, 213, 190, 0.42),
+            transparent 30%
+          ),
+          var(--cream);
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+      }
+      form[hidden] {
+        display: none !important;
+      }
+      .shell {
+        width: min(100%, 970px);
+        display: grid;
+        grid-template-columns: 0.95fr 1.05fr;
+        overflow: hidden;
+        border: 1px solid rgba(233, 222, 215, 0.9);
+        border-radius: 26px;
+        background: var(--white);
+        box-shadow: var(--shadow);
+      }
+      .brand-panel {
+        position: relative;
+        min-height: 640px;
+        overflow: hidden;
+        padding: 42px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        color: white;
+        background:
+          linear-gradient(
+            145deg,
+            rgba(58, 75, 56, 0.93),
+            rgba(88, 107, 73, 0.88)
+          ),
+          #526a52;
+      }
+      .brand-panel::before,
+      .brand-panel::after {
+        content: "";
+        position: absolute;
+        border: 1px solid rgba(255, 255, 255, 0.17);
+        border-radius: 50%;
+        pointer-events: none;
+      }
+      .brand-panel::before {
+        width: 370px;
+        height: 370px;
+        right: -125px;
+        bottom: 70px;
+      }
+      .brand-panel::after {
+        width: 260px;
+        height: 260px;
+        right: -70px;
+        bottom: 125px;
+      }
+      .brand-content,
+      .brand-footer {
+        position: relative;
+        z-index: 1;
+      }
+      .brand-mark {
+        display: inline-grid;
+        width: 50px;
+        height: 50px;
+        place-items: center;
+        border-radius: 17px;
+        background: rgba(255, 255, 255, 0.14);
+        font-size: 27px;
+        margin-bottom: 28px;
+      }
+      .eyebrow {
+        margin: 0 0 13px;
+        color: #f1d5d8;
+        font-size: 11px;
+        letter-spacing: 0.19em;
+        text-transform: uppercase;
+        font-weight: 800;
+      }
+      h1 {
+        margin: 0;
+        max-width: 360px;
+        font-family: Georgia, "Times New Roman", serif;
+        font-weight: 500;
+        font-size: clamp(35px, 4vw, 48px);
+        line-height: 1.08;
+        letter-spacing: -0.03em;
+      }
+      .brand-copy {
+        max-width: 310px;
+        margin: 20px 0 0;
+        line-height: 1.75;
+        color: rgba(255, 255, 255, 0.84);
+        font-size: 14px;
+      }
+      .floral-art {
+        position: absolute;
+        right: 16px;
+        bottom: 100px;
+        width: 300px;
+        height: 250px;
+        opacity: 0.92;
+      }
+      .petal {
+        position: absolute;
+        width: 75px;
+        height: 105px;
+        border-radius: 55% 55% 45% 45%;
+        background: linear-gradient(145deg, #f6dfe0, #c87887);
+        box-shadow: inset -8px -8px 14px rgba(105, 45, 61, 0.13);
+      }
+      .p1 {
+        left: 110px;
+        top: 10px;
+        transform: rotate(-5deg);
+      }
+      .p2 {
+        left: 70px;
+        top: 38px;
+        transform: rotate(-47deg);
+      }
+      .p3 {
+        left: 149px;
+        top: 39px;
+        transform: rotate(47deg);
+      }
+      .p4 {
+        left: 65px;
+        top: 89px;
+        transform: rotate(-78deg);
+      }
+      .p5 {
+        left: 151px;
+        top: 87px;
+        transform: rotate(78deg);
+      }
+      .flower-center {
+        position: absolute;
+        top: 82px;
+        left: 117px;
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          #d2a25a 0 14%,
+          #a97438 15% 25%,
+          #e9bc73 26% 50%,
+          #c6904b 51%
+        );
+        border: 5px solid rgba(255, 255, 255, 0.15);
+      }
+      .stem {
+        position: absolute;
+        width: 9px;
+        height: 110px;
+        left: 145px;
+        top: 143px;
+        background: #b0c6a0;
+        border-radius: 10px;
+        transform: rotate(8deg);
+        transform-origin: top;
+      }
+      .leaf {
+        position: absolute;
+        width: 76px;
+        height: 34px;
+        background: #95b08b;
+        border-radius: 100% 0 100% 0;
+        top: 181px;
+        left: 112px;
+        transform: rotate(-22deg);
+      }
+      .brand-footer {
+        color: rgba(255, 255, 255, 0.68);
+        font-size: 12px;
+      }
+      .form-panel {
+        padding: 48px clamp(24px, 5vw, 58px);
+        align-self: center;
+      }
+      .mobile-brand {
+        display: none;
+      }
+      .form-heading {
+        margin-bottom: 24px;
+      }
+      .form-heading h2 {
+        font-size: 27px;
+        margin: 0 0 8px;
+        font-family: Georgia, "Times New Roman", serif;
+        font-weight: 500;
+      }
+      .form-heading p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+      .tabs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 5px;
+        padding: 5px;
+        margin-bottom: 24px;
+        border-radius: 13px;
+        background: #f7f2ee;
+      }
+      .tab {
+        border: 0;
+        border-radius: 9px;
+        background: transparent;
+        padding: 11px 8px;
+        cursor: pointer;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .tab.active {
+        color: var(--rose-dark);
+        background: white;
+        box-shadow: 0 2px 8px rgba(60, 40, 30, 0.08);
+      }
+      form {
+        display: grid;
+        gap: 15px;
+      }
+      .field {
+        display: grid;
+        gap: 7px;
+      }
+      label {
+        font-size: 12px;
+        font-weight: 750;
+        color: #514744;
+      }
+      input,
+      textarea {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 11px;
+        background: #fffdfb;
+        color: var(--ink);
+        font: inherit;
+        font-size: 14px;
+        outline: none;
+        transition:
+          border-color 0.15s,
+          box-shadow 0.15s;
+      }
+      input {
+        min-height: 46px;
+        padding: 0 13px;
+      }
+      textarea {
+        padding: 12px 13px;
+        resize: vertical;
+        min-height: 75px;
+      }
+      input:focus,
+      textarea:focus {
+        border-color: #c17b8a;
+        box-shadow: 0 0 0 3px rgba(169, 79, 101, 0.12);
+      }
+      input::placeholder,
+      textarea::placeholder {
+        color: #b1a6a0;
+      }
+      .password-note {
+        margin: -7px 0 0;
+        color: #958985;
+        font-size: 11px;
+      }
+      .submit-btn {
+        border: 0;
+        border-radius: 11px;
+        min-height: 48px;
+        margin-top: 3px;
+        background: var(--rose);
+        color: white;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 800;
+        box-shadow: 0 8px 17px rgba(169, 79, 101, 0.2);
+        transition:
+          background 0.15s,
+          transform 0.15s;
+      }
+      .submit-btn:hover {
+        background: var(--rose-dark);
+        transform: translateY(-1px);
+      }
+      .submit-btn:disabled {
+        opacity: 0.65;
+        cursor: wait;
+        transform: none;
+      }
+      .message {
+        display: none;
+        border-radius: 10px;
+        padding: 11px 13px;
+        margin: 0 0 15px;
+        font-size: 12px;
+        line-height: 1.55;
+        overflow-wrap: anywhere;
+      }
+      .message.show {
+        display: block;
+      }
+      .message.error {
+        color: #873a37;
+        border: 1px solid #f1c8c4;
+        background: #fff1f0;
+      }
+      .message.success {
+        color: #315d3a;
+        border: 1px solid #c9e4ce;
+        background: #effaf0;
+      }
+      .privacy-note {
+        margin: 19px 0 0;
+        color: #a09590;
+        font-size: 11px;
+        line-height: 1.6;
+        text-align: center;
+      }
+      .profile {
+        display: none;
+      }
+      .profile.active {
+        display: block;
+      }
+      .profile-card {
+        border: 1px solid var(--line);
+        background: #fffdfb;
+        border-radius: 15px;
+        padding: 18px;
+        margin: 18px 0;
+      }
+      .profile-row {
+        padding: 11px 0;
+        border-bottom: 1px solid #f0e8e3;
+      }
+      .profile-row:last-child {
+        border-bottom: 0;
+      }
+      .profile-label {
+        display: block;
+        margin-bottom: 5px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 10px;
+        font-weight: 800;
+      }
+      .profile-value {
+        font-size: 13px;
+        line-height: 1.55;
+        overflow-wrap: anywhere;
+      }
+      .logout-btn {
+        width: 100%;
+        min-height: 45px;
+        border-radius: 11px;
+        border: 1px solid var(--line);
+        color: var(--rose-dark);
+        background: white;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .footnote {
+        margin-top: 20px;
+        color: #918681;
+        font-size: 11px;
+        line-height: 1.55;
+      }
+      @media (max-width: 720px) {
+        body {
+          padding: 16px 10px;
+        }
+        .shell {
+          grid-template-columns: 1fr;
+          border-radius: 20px;
+        }
+        .brand-panel {
+          display: none;
+        }
+        .form-panel {
+          padding: 27px 22px 30px;
+        }
+        .mobile-brand {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 27px;
+          color: var(--green);
+          font-weight: 800;
+          font-size: 13px;
+        }
+        .mobile-brand span {
+          display: grid;
+          place-items: center;
+          width: 38px;
+          height: 38px;
+          background: var(--rose-pale);
+          border-radius: 12px;
+          font-size: 22px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <aside class="brand-panel" aria-label="Roadside Bouquet Builder">
+        <div class="brand-content">
+          <div class="brand-mark" aria-hidden="true">✿</div>
+          <p class="eyebrow">Roadside Bouquet Builder</p>
+          <h1>Flowers that say it beautifully.</h1>
+          <p class="brand-copy">
+            Sign in to keep your details handy and make your next bouquet feel a
+            little more personal.
+          </p>
+        </div>
+        <div class="floral-art" aria-hidden="true">
+          <div class="petal p1"></div>
+          <div class="petal p2"></div>
+          <div class="petal p3"></div>
+          <div class="petal p4"></div>
+          <div class="petal p5"></div>
+          <div class="flower-center"></div>
+          <div class="stem"></div>
+          <div class="leaf"></div>
+        </div>
+        <div class="brand-footer">
+          Thoughtfully chosen. Beautifully bundled.
+        </div>
+      </aside>
+
+      <section class="form-panel">
+        <div class="mobile-brand">
+          <span aria-hidden="true">✿</span> Roadside Bouquet Builder
+        </div>
+        <div id="authView">
+          <header class="form-heading">
+            <h2 id="heading">Welcome back</h2>
+            <p id="subheading">Sign in to continue to your buyer account.</p>
+          </header>
+          <div class="tabs" role="tablist" aria-label="Buyer account">
+            <button
+              class="tab active"
+              id="loginTab"
+              type="button"
+              role="tab"
+              aria-selected="true"
+            >
+              Log in
+            </button>
+            <button
+              class="tab"
+              id="registerTab"
+              type="button"
+              role="tab"
+              aria-selected="false"
+            >
+              Create account
+            </button>
+          </div>
+          <div
+            id="message"
+            class="message"
+            role="status"
+            aria-live="polite"
+          ></div>
+
+          <form id="loginForm" novalidate>
+            <div class="field">
+              <label for="loginEmail">Email address</label
+              ><input
+                id="loginEmail"
+                name="email"
+                type="email"
+                autocomplete="email"
+                placeholder="you@example.com"
+                required
+              />
+            </div>
+            <div class="field">
+              <label for="loginPassword">Password</label
+              ><input
+                id="loginPassword"
+                name="password"
+                type="password"
+                autocomplete="current-password"
+                placeholder="Enter your password"
+                required
+              />
+            </div>
+            <button class="submit-btn" type="submit">
+              Log in to your account
+            </button>
+          </form>
+
+          <form id="registerForm" hidden novalidate>
+            <div class="field">
+              <label for="fullName">Full name</label
+              ><input
+                id="fullName"
+                name="fullName"
+                autocomplete="name"
+                placeholder="Your full name"
+                required
+              />
+            </div>
+            <div class="field">
+              <label for="registerEmail">Email address</label
+              ><input
+                id="registerEmail"
+                name="email"
+                type="email"
+                autocomplete="email"
+                placeholder="you@example.com"
+                required
+              />
+            </div>
+            <div class="field">
+              <label for="mobileNumber">Mobile number</label
+              ><input
+                id="mobileNumber"
+                name="mobileNumber"
+                type="tel"
+                autocomplete="tel"
+                inputmode="tel"
+                placeholder="e.g. 09XXXXXXXXX"
+                required
+              />
+            </div>
+            <div class="field">
+              <label for="address">Delivery address</label
+              ><textarea
+                id="address"
+                name="address"
+                autocomplete="street-address"
+                placeholder="House / street, barangay, city, province"
+                required
+              ></textarea>
+            </div>
+            <div class="field">
+              <label for="registerPassword">Create password</label
+              ><input
+                id="registerPassword"
+                name="password"
+                type="password"
+                autocomplete="new-password"
+                minlength="8"
+                placeholder="At least 8 characters"
+                required
+              />
+              <p class="password-note">Use at least 8 characters.</p>
+            </div>
+            <button class="submit-btn" type="submit">
+              Create buyer account
+            </button>
+          </form>
+          <p class="privacy-note">
+            Your address and mobile number are saved to your buyer profile and
+            are not used as your password.
+          </p>
+        </div>
+
+        <section id="profileView" class="profile" aria-live="polite">
+          <header class="form-heading">
+            <h2 id="profileHeading">You're signed in!</h2>
+            <p>Your buyer profile is connected to Supabase.</p>
+          </header>
+          <div id="profileMessage" class="message"></div>
+          <div class="profile-card">
+            <div class="profile-row">
+              <span class="profile-label">Full name</span>
+              <div id="profileName" class="profile-value">—</div>
+            </div>
+            <div class="profile-row">
+              <span class="profile-label">Email</span>
+              <div id="profileEmail" class="profile-value">—</div>
+            </div>
+            <div class="profile-row">
+              <span class="profile-label">Mobile number</span>
+              <div id="profileMobile" class="profile-value">—</div>
+            </div>
+            <div class="profile-row">
+              <span class="profile-label">Delivery address</span>
+              <div id="profileAddress" class="profile-value">—</div>
+            </div>
+          </div>
+          <!-- <button id="logoutButton" class="logout-btn" type="button">Log out</button> -->
+
+          <button id="proceedButton" class="logout-btn" type="button">
+            Click To Proceed
+          </button>
+          <p class="footnote">
+            This is a starter profile view. You can link this to your shop,
+            cart, orders, and checkout pages after authentication is working.
+          </p>
+        </section>
+      </section>
+    </main>
+
+    <script>
+      // Uses your Supabase project URL (without /rest/v1/) and publishable key.
+const SUPABASE_URL='https://mfgsuppsxqukymxafmde.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_QftaNSdWPgOi7ql2575Dzw_ML5D4xnv';
+      const supabaseClient = window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_PUBLISHABLE_KEY,
+      );
+
+      const authView = document.getElementById("authView");
+      const profileView = document.getElementById("profileView");
+      const loginTab = document.getElementById("loginTab");
+      const registerTab = document.getElementById("registerTab");
+      const loginForm = document.getElementById("loginForm");
+      const registerForm = document.getElementById("registerForm");
+      const heading = document.getElementById("heading");
+      const subheading = document.getElementById("subheading");
+      const messageBox = document.getElementById("message");
+
+      document.addEventListener("keydown", function (event) {
+        if (
+          event.key === "F12" ||
+          (event.ctrlKey &&
+            event.shiftKey &&
+            ["I", "J", "C"].includes(event.key.toUpperCase())) ||
+          (event.ctrlKey && event.key.toUpperCase() === "U")
+        ) {
+          event.preventDefault();
+        }
+      });
+
+      document.addEventListener("contextmenu", function (event) {
+        event.preventDefault();
+      });
+
+      function requestedDestination() {
+        const params = new URLSearchParams(window.location.search);
+        const next = params.get("next");
+        const allowed = new Set(["checkout.html", "roadside_bouquet_builder_live_chat.html"]);
+        if (!allowed.has(next)) return null;
+        const target = new URL(next, window.location.href);
+        const preset = params.get("preset");
+        if (preset) target.searchParams.set("preset", preset);
+        return target.href;
+      }
+
+      proceedButton.addEventListener("click", () => {
+        window.location.href = requestedDestination() || "roadside_bouquet_builder_live_chat.html";
+      });
+
+      function showMessage(text, type = "error") {
+        messageBox.textContent = text;
+        messageBox.className = `message show ${type}`;
+      }
+      function clearMessage() {
+        messageBox.textContent = "";
+        messageBox.className = "message";
+      }
+      function setBusy(form, busy, label) {
+        const button = form.querySelector('button[type="submit"]');
+        if (busy) {
+          button.dataset.originalText = button.textContent;
+          button.textContent = label;
+          button.disabled = true;
+        } else {
+          button.textContent =
+            button.dataset.originalText || button.textContent;
+          button.disabled = false;
+        }
+      }
+      function switchMode(mode) {
+        clearMessage();
+        const register = mode === "register";
+        loginForm.hidden = register;
+        registerForm.hidden = !register;
+        loginTab.classList.toggle("active", !register);
+        registerTab.classList.toggle("active", register);
+        loginTab.setAttribute("aria-selected", String(!register));
+        registerTab.setAttribute("aria-selected", String(register));
+        heading.textContent = register
+          ? "Create your buyer account"
+          : "Welcome back";
+        subheading.textContent = register
+          ? "Add your contact details for a smoother checkout."
+          : "Sign in to continue to your buyer account.";
+      }
+      loginTab.addEventListener("click", () => switchMode("login"));
+      registerTab.addEventListener("click", () => switchMode("register"));
+
+      loginForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        clearMessage();
+        if (!loginForm.reportValidity()) return;
+        const email = document.getElementById("loginEmail").value.trim();
+        const password = document.getElementById("loginPassword").value;
+        setBusy(loginForm, true, "Signing in…");
+        try {
+          const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email,
+            password,
+          });
+          if (error) throw error;
+          await showProfile(data.user);
+        } catch (error) {
+          showMessage(error.message || "Unable to log in. Please try again.");
+        } finally {
+          setBusy(loginForm, false);
+        }
+      });
+
+      registerForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        clearMessage();
+        if (!registerForm.reportValidity()) return;
+        const fullName = document.getElementById("fullName").value.trim();
+        const email = document.getElementById("registerEmail").value.trim();
+        const mobileNumber = document
+          .getElementById("mobileNumber")
+          .value.trim();
+        const address = document.getElementById("address").value.trim();
+        const password = document.getElementById("registerPassword").value;
+        if (!fullName || !mobileNumber || !address) {
+          showMessage(
+            "Please complete your name, mobile number, and delivery address.",
+          );
+          return;
+        }
+        setBusy(registerForm, true, "Creating account…");
+        try {
+          const { data, error } = await supabaseClient.auth.signUp({
+            email,
+            password,
+            options: {
+              data: {
+                full_name: fullName,
+                mobile_number: mobileNumber,
+                address,
+              },
+              emailRedirectTo:
+                window.location.origin + window.location.pathname,
+            },
+          });
+          if (error) throw error;
+          if (data.session && data.user) {
+            await showProfile(data.user);
+          } else {
+            showMessage(
+              "Account request submitted. Check your email for the confirmation link, then return here and log in.",
+              "success",
+            );
+            registerForm.reset();
+          }
+        } catch (error) {
+          showMessage(
+            error.message || "Unable to create your account. Please try again.",
+          );
+        } finally {
+          setBusy(registerForm, false);
+        }
+      });
+
+      async function showProfile(user) {
+        if (!user) return;
+        const destination = requestedDestination();
+        if (destination) {
+          window.location.replace(destination);
+          return;
+        }
+        authView.style.display = "none";
+        profileView.classList.add("active");
+        document.getElementById("profileHeading").textContent =
+          `Welcome${user.user_metadata?.full_name ? ", " + user.user_metadata.full_name : ""}!`;
+        document.getElementById("profileEmail").textContent = user.email || "—";
+        document.getElementById("profileName").textContent =
+          user.user_metadata?.full_name || "—";
+        document.getElementById("profileMobile").textContent =
+          user.user_metadata?.mobile_number || "—";
+        document.getElementById("profileAddress").textContent =
+          user.user_metadata?.address || "—";
+        const { data, error } = await supabaseClient
+          .from("buyers")
+          .select("full_name, email, mobile_number, address")
+          .eq("id", user.id)
+          .maybeSingle();
+        if (error) console.error("Could not load buyer profile:", error);
+        if (data) {
+          document.getElementById("profileName").textContent =
+            data.full_name || "—";
+          document.getElementById("profileEmail").textContent =
+            data.email || user.email || "—";
+          document.getElementById("profileMobile").textContent =
+            data.mobile_number || "—";
+          document.getElementById("profileAddress").textContent =
+            data.address || "—";
+        } else {
+          const box = document.getElementById("profileMessage");
+          box.textContent = error
+            ? "You are signed in, but your buyers profile could not be loaded. Run the SQL setup file and check the buyers table policies."
+            : "You are signed in, but no buyers profile row was found. Make sure the SQL setup script and signup trigger have been created.";
+          box.className = "message show error";
+        }
+      }
+
+      // document.getElementById('logoutButton').addEventListener('click', async () => {
+      //   const button = document.getElementById('logoutButton');
+      //   button.disabled = true;
+      //   const { error } = await supabaseClient.auth.signOut();
+      //   button.disabled = false;
+      //   if (error) {
+      //     const box = document.getElementById('profileMessage');
+      //     box.textContent = error.message;
+      //     box.className = 'message show error';
+      //     return;
+      //   }
+      //   profileView.classList.remove('active');
+      //   document.getElementById('profileMessage').className = 'message';
+      //   authView.style.display = '';
+      //   loginForm.reset();
+      //   switchMode('login');
+      // });
+
+      // Restore the user's session after a page refresh.
+      (async () => {
+        try {
+          const { data, error } = await supabaseClient.auth.getSession();
+          if (error) throw error;
+          if (data.session?.user) await showProfile(data.session.user);
+        } catch (error) {
+          console.error("Unable to restore Supabase session:", error.message);
+        }
+      })();
+    </script>
+  </body>
+</html>

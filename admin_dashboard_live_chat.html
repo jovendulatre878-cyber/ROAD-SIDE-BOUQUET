@@ -1,0 +1,1604 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Roadside Bouquet | Admin Orders</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+      :root {
+        --ink: #2b2730;
+        --muted: #77717d;
+        --line: #eee5ed;
+        --pink: #b84d78;
+        --pink2: #fff0f5;
+        --bg: #fbf8fa;
+        --green: #267653;
+        --amber: #98651a;
+        --red: #a43b4a;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font:
+          14px/1.45 Inter,
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          sans-serif;
+      }
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+      button {
+        cursor: pointer;
+      }
+      .hidden {
+        display: none !important;
+      }
+      header {
+        background: #fff;
+        border-bottom: 1px solid var(--line);
+        padding: 18px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        position: sticky;
+        top: 0;
+        z-index: 5;
+      }
+      header h1 {
+        font-size: 19px;
+        margin: 0;
+      }
+      header p {
+        margin: 3px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .brand {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .logo {
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        background: var(--pink2);
+        display: grid;
+        place-items: center;
+        font-size: 22px;
+      }
+      .wrap {
+        max-width: 1400px;
+        margin: auto;
+        padding: 24px;
+      }
+      .btn {
+        border: 1px solid var(--line);
+        background: white;
+        padding: 9px 13px;
+        border-radius: 10px;
+        color: var(--ink);
+        font-weight: 650;
+      }
+      .btn.primary {
+        background: var(--pink);
+        color: #fff;
+        border-color: var(--pink);
+      }
+      .btn.danger {
+        color: var(--red);
+      }
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .login {
+        max-width: 410px;
+        margin: 8vh auto;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        padding: 28px;
+        box-shadow: 0 12px 36px #4a173010;
+      }
+      .login h2 {
+        margin: 0 0 5px;
+      }
+      .login p {
+        color: var(--muted);
+        margin-top: 0;
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin: 13px 0;
+      }
+      .field label {
+        font-size: 12px;
+        color: var(--muted);
+        font-weight: 750;
+      }
+      .field input,
+      .field select {
+        width: 100%;
+        border: 1px solid #e4dce4;
+        border-radius: 10px;
+        padding: 11px;
+        background: #fff;
+        color: var(--ink);
+      }
+      .notice {
+        margin-top: 12px;
+        color: var(--red);
+        font-size: 13px;
+        white-space: pre-wrap;
+      }
+      .topline {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+      }
+      .topline h2 {
+        font-size: 25px;
+        margin: 0;
+      }
+      .topline p {
+        margin: 5px 0 0;
+        color: var(--muted);
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 13px;
+        margin-bottom: 20px;
+      }
+      .stat {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 17px;
+      }
+      .stat .label {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .stat .num {
+        font-size: 26px;
+        font-weight: 800;
+        margin-top: 5px;
+      }
+      .filters {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 15px;
+        padding: 13px;
+        margin-bottom: 14px;
+      }
+      .filters input,
+      .filters select {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px;
+        background: #fff;
+        min-width: 155px;
+      }
+      .filters input {
+        flex: 1;
+        min-width: 210px;
+      }
+      .tablebox {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        overflow: hidden;
+      }
+      .tablehead {
+        padding: 14px 17px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: center;
+        border-bottom: 1px solid var(--line);
+      }
+      .tablehead strong {
+        font-size: 15px;
+      }
+      .tablewrap {
+        overflow: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 900px;
+      }
+      th {
+        text-align: left;
+        font-size: 11px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--muted);
+        background: #fdfafd;
+        padding: 12px 14px;
+        white-space: nowrap;
+      }
+      td {
+        padding: 14px;
+        border-top: 1px solid #f2edf2;
+        vertical-align: middle;
+      }
+      tr:hover td {
+        background: #fffafd;
+      }
+      .orderid {
+        font-weight: 800;
+      }
+      .sub {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 3px;
+      }
+      .money {
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .pill {
+        display: inline-flex;
+        border-radius: 999px;
+        padding: 5px 9px;
+        font-size: 11px;
+        font-weight: 800;
+        background: #f3eff3;
+        color: #665d68;
+        white-space: nowrap;
+      }
+      .pill.good {
+        background: #e8f6ee;
+        color: var(--green);
+      }
+      .pill.warn {
+        background: #fff4dd;
+        color: var(--amber);
+      }
+      .pill.bad {
+        background: #ffedf0;
+        color: var(--red);
+      }
+      .empty {
+        padding: 38px;
+        text-align: center;
+        color: var(--muted);
+      }
+      .error {
+        color: var(--red);
+        padding: 12px 16px;
+        white-space: pre-wrap;
+      }
+      .modalback {
+        position: fixed;
+        inset: 0;
+        background: #21192380;
+        z-index: 20;
+        display: flex;
+        justify-content: flex-end;
+      }
+      .drawer {
+        background: #fff;
+        width: min(720px, 100%);
+        height: 100%;
+        overflow: auto;
+        box-shadow: -20px 0 60px #0002;
+      }
+      .drawerhead {
+        position: sticky;
+        top: 0;
+        background: #fff;
+        border-bottom: 1px solid var(--line);
+        padding: 18px 22px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 2;
+      }
+      .drawerhead h2 {
+        font-size: 19px;
+        margin: 0;
+      }
+      .drawerbody {
+        padding: 20px 22px 28px;
+      }
+      .section {
+        border: 1px solid var(--line);
+        border-radius: 15px;
+        padding: 16px;
+        margin-bottom: 14px;
+      }
+      .section h3 {
+        font-size: 14px;
+        margin: 0 0 13px;
+      }
+      .sectiontop {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .sectiontop h3 {
+        margin: 0;
+      }
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+      .info-item {
+        min-width: 0;
+      }
+      .info-item.full {
+        grid-column: 1/-1;
+      }
+      .info-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+        font-weight: 800;
+        margin-bottom: 4px;
+      }
+      .info-value {
+        font-weight: 650;
+        overflow-wrap: anywhere;
+      }
+      .design-list {
+        display: grid;
+        gap: 0;
+      }
+      .design-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+        padding: 10px 0;
+        border-bottom: 1px solid #f1ebf1;
+      }
+      .design-row:last-child {
+        border-bottom: 0;
+      }
+      .design-row span:first-child {
+        color: var(--muted);
+      }
+      .design-row strong {
+        text-align: right;
+        overflow-wrap: anywhere;
+      }
+      .totalrow {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid var(--line);
+        margin-top: 8px;
+        padding-top: 13px;
+        font-size: 16px;
+        font-weight: 850;
+      }
+      .receipt {
+        display: block;
+        max-width: 100%;
+        max-height: 330px;
+        object-fit: contain;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        margin-top: 10px;
+      }
+      .actionsgrid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .statusnote {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 9px;
+      }
+      .toast {
+        position: fixed;
+        bottom: 18px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #302630;
+        color: white;
+        padding: 12px 17px;
+        border-radius: 12px;
+        z-index: 50;
+        box-shadow: 0 8px 30px #0002;
+        max-width: 90vw;
+      }
+      @media (max-width: 800px) {
+        .wrap {
+          padding: 14px;
+        }
+        .stats {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .info-grid,
+        .actionsgrid {
+          grid-template-columns: 1fr;
+        }
+        .info-item.full {
+          grid-column: auto;
+        }
+        header {
+          padding: 14px;
+        }
+        .topline h2 {
+          font-size: 21px;
+        }
+      }
+
+      .chat-layout {
+        display: grid;
+        grid-template-columns: minmax(250px, 330px) minmax(0, 1fr);
+        height: min(72vh, 760px);
+        min-height: 480px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        overflow: hidden;
+      }
+      .chat-list {
+        border-right: 1px solid var(--line);
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .chat-list-head {
+        padding: 15px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .chat-list-head h3 {
+        font-size: 15px;
+        margin: 0;
+      }
+      .chat-search {
+        margin: 12px;
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        padding: 10px;
+      }
+      .chat-conversation {
+        border: 0;
+        border-bottom: 1px solid #f3edf2;
+        background: #fff;
+        text-align: left;
+        padding: 13px 14px;
+        display: block;
+        width: 100%;
+        color: var(--ink);
+      }
+      .chat-conversation.active {
+        background: var(--pink2);
+      }
+      .chat-conversation strong,
+      .chat-conversation .preview {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .chat-conversation .preview {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+      .chat-conversation .chat-meta {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 6px;
+      }
+      .unread-dot {
+        display: inline-block;
+        background: var(--pink);
+        color: #fff;
+        border-radius: 999px;
+        padding: 2px 7px;
+        font-size: 10px;
+      }
+      .chat-thread {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        min-height: 0;
+      }
+      .chat-thread-head {
+        padding: 16px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .chat-thread-head > div {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+      .btn.danger {
+        color: var(--red);
+        border-color: #efc9d0;
+      }
+      .btn.danger:hover {
+        background: #fff0f2;
+      }
+      .chat-messages {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        background: #fcfafc;
+      }
+      .chat-bubble {
+        max-width: min(78%, 520px);
+        padding: 10px 12px;
+        border-radius: 14px;
+        background: #fff;
+        border: 1px solid var(--line);
+        align-self: flex-start;
+        overflow-wrap: anywhere;
+      }
+      .chat-bubble.admin {
+        align-self: flex-end;
+        background: var(--pink2);
+        border-color: #f0d5e1;
+      }
+      .chat-bubble small {
+        display: block;
+        color: var(--muted);
+        font-size: 10px;
+        margin-top: 6px;
+      }
+      .chat-compose {
+        display: flex;
+        gap: 9px;
+        padding: 12px;
+        border-top: 1px solid var(--line);
+        align-items: end;
+      }
+      .chat-compose textarea {
+        resize: vertical;
+        min-height: 44px;
+        max-height: 120px;
+        flex: 1;
+        min-width: 0;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 11px;
+      }
+      .chat-compose-tools {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .chat-image-preview {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 0 12px 10px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .chat-image-preview img {
+        width: 54px;
+        height: 54px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+      }
+      .chat-photo {
+        display: block;
+        max-width: 100%;
+        max-height: 300px;
+        object-fit: contain;
+        border-radius: 10px;
+        margin-top: 7px;
+      }
+      .chat-notice {
+        padding: 0 12px 10px;
+        color: var(--red);
+        font-size: 12px;
+        white-space: pre-wrap;
+      }
+      #chatUnreadBadge {
+        font-size: 11px;
+        margin-left: 4px;
+      }
+      .hidden {
+        display: none !important;
+      }
+      @media (max-width: 720px) {
+        .chat-layout {
+          grid-template-columns: 1fr;
+          height: auto;
+          min-height: 70vh;
+        }
+        .chat-list {
+          max-height: 250px;
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+        .chat-messages {
+          min-height: 280px;
+        }
+        .chat-thread {
+          min-height: 430px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="brand">
+        <div class="logo">🌷</div>
+        <div>
+          <h1>Roadside Bouquet</h1>
+          <p>Admin order management</p>
+        </div>
+      </div>
+      <div
+        style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap"
+      >
+        <button id="ordersTabBtn" class="btn primary hidden">Orders</button
+        ><button id="chatTabBtn" class="btn hidden">
+          💬 Live Chat <span id="chatUnreadBadge"></span></button
+        >
+        <button id="logoutBtn" class="btn hidden">Sign out</button>
+      </div>
+    </header>
+    <section id="loginView" class="login">
+      <h2>Admin sign in</h2>
+      <p>Sign in with an authorized admin account to manage customer orders.</p>
+      <div class="field">
+        <label for="email">EMAIL</label
+        ><input
+          id="email"
+          type="email"
+          autocomplete="username"
+          placeholder="admin@example.com"
+        />
+      </div>
+      <div class="field">
+        <label for="password">PASSWORD</label
+        ><input
+          id="password"
+          type="password"
+          autocomplete="current-password"
+          placeholder="Your password"
+        />
+      </div>
+      <button id="loginBtn" class="btn primary" style="width: 100%">
+        Sign in
+      </button>
+      <div id="loginMsg" class="notice"></div>
+      <p style="font-size: 12px; margin: 15px 0 0">
+        Admin accounts must be authorized in <code>public.bouquet_admins</code>.
+      </p>
+    </section>
+    <main id="appView" class="wrap hidden">
+      <div id="ordersPanel">
+        <div class="topline">
+          <div>
+            <h2>Orders</h2>
+            <p>
+              Review customer details, bouquet selections, payments, and
+              fulfillment status.
+            </p>
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap">
+            <button id="managePrebuilBtn" class="btn">Manage Prebuild Flowers</button>
+            <button id="refreshBtn" class="btn">↻ Refresh</button
+            ><button id="csvBtn" class="btn">Export CSV</button>
+          </div>
+        </div>
+        <div class="stats">
+          <div class="stat">
+            <div class="label">TOTAL ORDERS</div>
+            <div id="statOrders" class="num">—</div>
+          </div>
+          <div class="stat">
+            <div class="label">NEEDS ATTENTION</div>
+            <div id="statAction" class="num">—</div>
+          </div>
+          <div class="stat">
+            <div class="label">PAYMENTS MARKED PAID</div>
+            <div id="statPaid" class="num">—</div>
+          </div>
+          <div class="stat">
+            <div class="label">TOTAL ORDER VALUE</div>
+            <div id="statValue" class="num">—</div>
+          </div>
+        </div>
+        <div class="filters">
+          <input
+            id="searchBox"
+            placeholder="Search order ID, customer, phone, address…"
+          /><select id="statusFilter">
+            <option value="">All order statuses</option>
+            <option>pending</option>
+            <option>pending_payment</option>
+            <option>confirmed</option>
+            <option>preparing</option>
+            <option>ready</option>
+            <option>out_for_delivery</option>
+            <option>completed</option>
+            <option>cancelled</option></select
+          ><select id="paymentFilter">
+            <option value="">All payment statuses</option>
+            <option>pending_verification</option>
+            <option>unpaid_cod</option>
+            <option>paid</option>
+            <option>failed</option>
+            <option>refunded</option></select
+          ><select id="methodFilter">
+            <option value="">All payment methods</option>
+            <option value="gcash">GCash</option>
+            <option value="cod">Cash on Delivery</option>
+          </select>
+        </div>
+        <div class="tablebox">
+          <div class="tablehead">
+            <strong>Customer orders</strong
+            ><span id="resultCount" class="sub">Loading orders…</span>
+          </div>
+          <div id="tableError" class="error hidden"></div>
+          <div class="tablewrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Order</th>
+                  <th>Customer</th>
+                  <th>Order status</th>
+                  <th>Payment</th>
+                  <th>Total</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody id="ordersBody"></tbody>
+            </table>
+          </div>
+          <div id="emptyState" class="empty hidden">
+            No orders match these filters.
+          </div>
+        </div>
+      </div>
+      <section id="chatPanel" class="hidden">
+        <div class="chat-layout">
+          <aside class="chat-list">
+            <div class="chat-list-head">
+              <h3>Buyer conversations</h3>
+              <button id="chatRefreshBtn" class="btn">Refresh</button>
+            </div>
+            <input
+              id="chatSearch"
+              placeholder="Search buyers…"
+              class="chat-search"
+            />
+            <div id="chatConversationList">
+              <div class="empty">Loading conversations…</div>
+            </div>
+          </aside>
+          <section class="chat-thread">
+            <div id="chatThreadHead" class="chat-thread-head">
+              <div>
+                <strong>Select a conversation</strong
+                ><span class="sub">Buyer messages will appear here.</span>
+              </div>
+              <button
+                type="button"
+                id="adminDeleteChatBtn"
+                class="btn danger hidden"
+                disabled
+              >
+                Delete chat
+              </button>
+            </div>
+            <div id="chatMessages" class="chat-messages">
+              <div class="empty">Choose a buyer to view messages.</div>
+            </div>
+            <form id="adminChatForm" class="chat-compose">
+              <textarea
+                id="adminChatInput"
+                rows="2"
+                maxlength="3000"
+                placeholder="Write a reply…"
+                disabled
+              ></textarea>
+              <div class="chat-compose-tools">
+                <label class="btn" for="adminChatImageInput">＋ Photo</label
+                ><input
+                  id="adminChatImageInput"
+                  type="file"
+                  accept="image/*"
+                  class="hidden"
+                  disabled
+                /><button
+                  id="adminChatSend"
+                  class="btn primary"
+                  type="submit"
+                  disabled
+                >
+                  Send
+                </button>
+              </div>
+            </form>
+            <div
+              id="adminChatImagePreview"
+              class="chat-image-preview hidden"
+            ></div>
+            <div id="adminChatNotice" class="chat-notice" role="status"></div>
+          </section>
+        </div>
+      </section>
+    </main>
+    <div id="detailLayer" class="modalback hidden">
+      <aside class="drawer">
+        <div class="drawerhead">
+          <div>
+            <h2 id="detailTitle">Order details</h2>
+            <div id="detailSubtitle" class="sub"></div>
+          </div>
+          <button id="closeDetail" class="btn" aria-label="Close details">
+            ✕ Close
+          </button>
+        </div>
+        <div id="detailBody" class="drawerbody"></div>
+      </aside>
+    </div>
+    <div id="toast" class="toast hidden"></div>
+    <script>
+      const SUPABASE_URL = "https://mfgsuppsxqukymxafmde.supabase.co";
+      const SUPABASE_ANON_KEY =
+        "sb_publishable_QftaNSdWPgOi7ql2575Dzw_ML5D4xnv";
+      const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      let orders = [],
+        designsById = {},
+        currentOrder = null;
+      const $ = (id) => document.getElementById(id);
+      const safe = (v) =>
+        String(v ?? "").replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+      const money = (v) =>
+        new Intl.NumberFormat("en-PH", {
+          style: "currency",
+          currency: "PHP",
+        }).format(Number(v) || 0);
+      const pretty = (v) =>
+        String(v ?? "—")
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, (c) => c.toUpperCase());
+      const val = (...xs) =>
+        xs.find((x) => x !== null && x !== undefined && x !== "") ?? "—";
+      const datefmt = (v) => {
+        if (!v) return "—";
+        const d = new Date(v);
+        return isNaN(d)
+          ? String(v)
+          : d.toLocaleString("en-PH", {
+              dateStyle: "medium",
+              timeStyle: "short",
+            });
+      };
+      const pill = (s, type = "") =>
+        `<span class="pill ${type}">${safe(pretty(s))}</span>`;
+      const statusType = (s) =>
+        ["paid", "completed"].includes(String(s).toLowerCase())
+          ? "good"
+          : [
+                "pending",
+                "pending_payment",
+                "pending_verification",
+                "unpaid_cod",
+                "preparing",
+                "confirmed",
+                "ready",
+                "out_for_delivery",
+              ].includes(String(s).toLowerCase())
+            ? "warn"
+            : ["failed", "refunded", "cancelled"].includes(
+                  String(s).toLowerCase(),
+                )
+              ? "bad"
+              : "";
+      function toast(msg) {
+        $("toast").textContent = msg;
+        $("toast").classList.remove("hidden");
+        setTimeout(() => $("toast").classList.add("hidden"), 2800);
+      }
+      async function isAdmin(userId) {
+        const { data, error } = await db
+          .from("bouquet_admins")
+          .select("user_id")
+          .eq("user_id", userId)
+          .maybeSingle();
+        if (error) throw error;
+        return !!data;
+      }
+      async function updateAuth() {
+        const {
+          data: { session },
+        } = await db.auth.getSession();
+        if (!session) {
+          showLoggedOut();
+          return;
+        }
+        try {
+          if (!(await isAdmin(session.user.id))) {
+            await db.auth.signOut();
+            showLoggedOut(
+              "This account is not authorized as an admin. Add its UID to public.bouquet_admins.",
+            );
+            return;
+          }
+          showLoggedIn();
+          await loadOrders();
+          startAdminConversationRealtime();
+        } catch (e) {
+          showLoggedOut(
+            "Could not verify admin access. Check that the admin SQL setup has been run.\\n" +
+              e.message,
+          );
+        }
+      }
+      function showLoggedOut(msg = "") {
+        $("loginView").classList.remove("hidden");
+        $("appView").classList.add("hidden");
+        $("logoutBtn").classList.add("hidden");
+        $("ordersTabBtn").classList.add("hidden");
+        $("chatTabBtn").classList.add("hidden");
+        $("loginMsg").textContent = msg;
+      }
+      function showLoggedIn() {
+        $("loginView").classList.add("hidden");
+        $("appView").classList.remove("hidden");
+        $("logoutBtn").classList.remove("hidden");
+        $("ordersTabBtn").classList.remove("hidden");
+        $("chatTabBtn").classList.remove("hidden");
+        $("loginMsg").textContent = "";
+      }
+      $("loginBtn").onclick = async () => {
+        $("loginMsg").textContent = "Signing in…";
+        const { error } = await db.auth.signInWithPassword({
+          email: $("email").value.trim(),
+          password: $("password").value,
+        });
+        if (error) {
+          $("loginMsg").textContent = error.message;
+          return;
+        }
+        await updateAuth();
+      };
+      $("password").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") $("loginBtn").click();
+      });
+      $("logoutBtn").onclick = async () => {
+        stopAdminMessageRealtime();
+        if (chatChannel) db.removeChannel(chatChannel);
+        await db.auth.signOut();
+        showLoggedOut();
+      };
+      async function loadOrders() {
+        $("tableError").classList.add("hidden");
+        $("ordersBody").innerHTML =
+          '<tr><td colspan="6" class="empty">Loading orders…</td></tr>';
+        const { data, error } = await db
+          .from("bouquet_orders")
+          .select("*")
+          .order("created_at", { ascending: false });
+        if (error) {
+          $("ordersBody").innerHTML = "";
+          $("tableError").textContent =
+            "Unable to load orders: " +
+            error.message +
+            "\\nCheck table names, RLS policies, and the admin SQL setup.";
+          $("tableError").classList.remove("hidden");
+          $("resultCount").textContent = "Could not load";
+          return;
+        }
+        orders = data || [];
+        const ids = [
+          ...new Set(orders.map((o) => o.bouquet_design_id).filter(Boolean)),
+        ];
+        designsById = {};
+        if (ids.length) {
+          const { data: ddata, error: derr } = await db
+            .from("bouquet_designs")
+            .select("*")
+            .in("id", ids);
+          if (!derr) (ddata || []).forEach((d) => (designsById[d.id] = d));
+          else console.warn("Could not fetch bouquet designs:", derr.message);
+        }
+        renderOrders();
+      }
+      function orderText(o) {
+        return [o.id, o.full_name, o.phone, o.delivery_address, o.notes]
+          .join(" ")
+          .toLowerCase();
+      }
+      function filtered() {
+        const q = $("searchBox").value.toLowerCase().trim(),
+          s = $("statusFilter").value,
+          p = $("paymentFilter").value,
+          m = $("methodFilter").value;
+        return orders.filter(
+          (o) =>
+            (!q || orderText(o).includes(q)) &&
+            (!s || o.order_status === s) &&
+            (!p || o.payment_status === p) &&
+            (!m || String(o.payment_method || "").toLowerCase() === m),
+        );
+      }
+      function renderOrders() {
+        const list = filtered();
+        $("statOrders").textContent = orders.length;
+        $("statAction").textContent = orders.filter(
+          (o) =>
+            !["completed", "cancelled"].includes(o.order_status) &&
+            !["paid", "unpaid_cod"].includes(o.payment_status),
+        ).length;
+        $("statPaid").textContent = orders.filter(
+          (o) => o.payment_status === "paid",
+        ).length;
+        $("statValue").textContent = money(
+          orders.reduce((a, o) => a + (Number(o.total_price) || 0), 0),
+        );
+        $("resultCount").textContent =
+          `Showing ${list.length} of ${orders.length} orders`;
+        $("emptyState").classList.toggle("hidden", list.length !== 0);
+        $("ordersBody").innerHTML = list
+          .map(
+            (o) =>
+              `<tr><td><div class="orderid">#${safe(String(o.id).slice(0, 8))}</div><div class="sub">${safe(datefmt(o.created_at))}</div></td><td><strong>${safe(val(o.full_name))}</strong><div class="sub">${safe(val(o.phone))}</div></td><td>${pill(o.order_status || "pending", statusType(o.order_status))}</td><td><div>${safe(pretty(o.payment_method || "—"))}</div><div style="margin-top:5px">${pill(o.payment_status || "—", statusType(o.payment_status))}</div></td><td class="money">${money(o.total_price)}</td><td><button class="btn primary" data-open="${safe(o.id)}">View details</button></td></tr>`,
+          )
+          .join("");
+        document
+          .querySelectorAll("[data-open]")
+          .forEach((b) => (b.onclick = () => openDetails(b.dataset.open)));
+      }
+      ["searchBox", "statusFilter", "paymentFilter", "methodFilter"].forEach(
+        (id) =>
+          $(id).addEventListener(
+            id === "searchBox" ? "input" : "change",
+            renderOrders,
+          ),
+      );
+      $("refreshBtn").onclick = loadOrders;
+      $("closeDetail").onclick = () => $("detailLayer").classList.add("hidden");
+
+      $("managePrebuilBtn").addEventListener("click", (e) => {
+        window.location.href = "roadside_bouquet_prebuilt_image_manager_with_category.html";
+      });
+      
+      $("detailLayer").addEventListener("click", (e) => {
+        if (e.target === $("detailLayer"))
+          $("detailLayer").classList.add("hidden");
+      });
+      function arrText(v) {
+        if (v === null || v === undefined || v === "") return "—";
+        if (Array.isArray(v))
+          return (
+            v
+              .map((x) =>
+                typeof x === "object"
+                  ? x.name || x.label || JSON.stringify(x)
+                  : x,
+              )
+              .join(", ") || "—"
+          );
+        if (typeof v === "object")
+          return Object.entries(v)
+            .map(
+              ([k, x]) =>
+                `${pretty(k)}: ${typeof x === "object" ? JSON.stringify(x) : x}`,
+            )
+            .join(", ");
+        return String(v);
+      }
+      function info(label, value, full = false) {
+        return `<div class="info-item ${full ? "full" : ""}"><div class="info-label">${safe(label)}</div><div class="info-value">${safe(val(value))}</div></div>`;
+      }
+      function selectField(id, label, current, options) {
+        return `<div class="field"><label for="${id}">${safe(label)}</label><select id="${id}">${options.map((x) => `<option value="${safe(x)}" ${x === current ? "selected" : ""}>${safe(pretty(x))}</option>`).join("")}</select></div>`;
+      }
+      async function openDetails(id) {
+        const o = orders.find((x) => String(x.id) === String(id));
+        if (!o) return;
+        currentOrder = o;
+        const d = designsById[o.bouquet_design_id] || {};
+        $("detailTitle").textContent = "Order details";
+        $("detailSubtitle").textContent =
+          `Order #${String(o.id).slice(0, 8)} · ${datefmt(o.created_at)}`;
+        let receiptUrl = "";
+        if (o.receipt_path) {
+          const { data, error } = await db.storage
+            .from("payment-receipts")
+            .createSignedUrl(o.receipt_path, 300);
+          if (!error) receiptUrl = data.signedUrl;
+        }
+        const flower = arrText(d.main_flowers ?? o.main_flowers),
+          filler = arrText(d.filler ?? o.filler),
+          wrapper = arrText(d.wrapper ?? o.wrapper),
+          ribbon = arrText(d.ribbon ?? o.ribbon);
+        $("detailBody").innerHTML = `
+<div class="section"><div class="sectiontop"><h3>Order summary</h3>${pill(o.order_status || "pending", statusType(o.order_status))}</div><div class="info-grid">${info("Order ID", o.id, true)}${info("Date placed", datefmt(o.created_at))}${info("Payment method", pretty(o.payment_method))}${info("Payment status", pretty(o.payment_status))}</div><div class="totalrow"><span>Order total</span><span>${money(o.total_price)}</span></div></div>
+<div class="section"><h3>Customer & delivery information</h3><div class="info-grid">${info("Customer name", o.full_name)}${info("Phone number", o.phone)}${info("Delivery address", o.delivery_address, true)}${info("Customer instructions / notes", o.notes, true)}</div></div>
+<div class="section"><div class="sectiontop"><h3>Bouquet selections</h3><span class="pill">Saved design info</span></div><div class="design-list"><div class="design-row"><span>Main flowers</span><strong>${safe(flower)}</strong></div><div class="design-row"><span>Filler flowers</span><strong>${safe(filler)}</strong></div><div class="design-row"><span>Wrapper</span><strong>${safe(wrapper)}</strong></div><div class="design-row"><span>Ribbon</span><strong>${safe(ribbon)}</strong></div></div><p class="statusnote">This section lists the saved selections. It does not generate a live canvas preview.</p></div>
+<div class="section"><h3>Payment verification</h3><div class="info-grid">${info("Payment method", pretty(o.payment_method))}${info("Payment status", pretty(o.payment_status))}${info("Receipt file", o.receipt_path || "No receipt uploaded", true)}</div>${receiptUrl ? `<a class="btn" href="${safe(receiptUrl)}" target="_blank" rel="noopener">Open full receipt ↗</a><img class="receipt" src="${safe(receiptUrl)}" alt="Payment receipt preview" onerror="this.style.display='none'">` : o.receipt_path ? '<p class="statusnote">Receipt link could not be opened. Check storage bucket permissions and receipt path.</p>' : '<p class="statusnote">No GCash receipt is attached to this order.</p>'}</div>
+<div class="section"><h3>Update order</h3><div class="actionsgrid">${selectField("newOrderStatus", "Order status", o.order_status || "pending", ["pending", "pending_payment", "confirmed", "preparing", "ready", "out_for_delivery", "completed", "cancelled"])}${selectField("newPaymentStatus", "Payment status", o.payment_status || "pending_verification", ["pending_verification", "unpaid_cod", "paid", "failed", "refunded"])}</div><button id="saveStatus" class="btn primary" style="width:100%">Save status changes</button><p class="statusnote">Only mark a GCash order as paid after checking the uploaded receipt.</p></div>`;
+        $("detailLayer").classList.remove("hidden");
+        $("saveStatus").onclick = () => saveStatuses(o);
+      }
+      async function saveStatuses(o) {
+        const order_status = $("newOrderStatus").value,
+          payment_status = $("newPaymentStatus").value;
+        $("saveStatus").disabled = true;
+        $("saveStatus").textContent = "Saving…";
+        const { error } = await db
+          .from("bouquet_orders")
+          .update({ order_status, payment_status })
+          .eq("id", o.id);
+        if (error) {
+          toast("Could not save: " + error.message);
+          $("saveStatus").disabled = false;
+          $("saveStatus").textContent = "Save status changes";
+          return;
+        }
+        toast("Order status updated");
+        $("detailLayer").classList.add("hidden");
+        await loadOrders();
+      }
+      $("csvBtn").onclick = () => {
+        const list = filtered();
+        const cols = [
+          "id",
+          "created_at",
+          "full_name",
+          "phone",
+          "delivery_address",
+          "payment_method",
+          "payment_status",
+          "order_status",
+          "total_price",
+          "notes",
+        ];
+        const quote = (v) => '"' + String(v ?? "").replace(/"/g, '""') + '"';
+        const csv = [
+          cols.join(","),
+          ...list.map((o) => cols.map((k) => quote(o[k])).join(",")),
+        ].join("\r\n");
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(
+          new Blob([csv], { type: "text/csv;charset=utf-8;" }),
+        );
+        a.download = "roadside-bouquet-orders.csv";
+        a.click();
+        URL.revokeObjectURL(a.href);
+      };
+
+      let chatConversations = [],
+        activeConversationId = null,
+        chatChannel = null,
+        chatMessagesChannel = null,
+        adminSelectedImage = null;
+      const escapeChat = (v) =>
+        String(v ?? "").replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+      const chatDate = (v) => {
+        if (!v) return "";
+        const d = new Date(v);
+        return isNaN(d)
+          ? ""
+          : d.toLocaleString("en-PH", {
+              month: "short",
+              day: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+            });
+      };
+      function setAdminTab(tab) {
+        const chat = tab === "chat";
+        $("ordersPanel").classList.toggle("hidden", chat);
+        $("chatPanel").classList.toggle("hidden", !chat);
+        $("ordersTabBtn").classList.toggle("primary", !chat);
+        $("chatTabBtn").classList.toggle("primary", chat);
+        if (chat) loadChatConversations();
+      }
+      $("ordersTabBtn").onclick = () => setAdminTab("orders");
+      $("chatTabBtn").onclick = () => setAdminTab("chat");
+      async function loadChatConversations() {
+        $("chatConversationList").innerHTML =
+          '<div class="empty">Loading conversations…</div>';
+        const { data, error } = await db
+          .from("chat_conversations")
+          .select("*")
+          .order("last_message_at", { ascending: false, nullsFirst: false });
+        if (error) {
+          $("chatConversationList").innerHTML =
+            '<div class="error">Could not load chats: ' +
+            escapeChat(error.message) +
+            "<br>Run the Live Chat SQL setup first.</div>";
+          return;
+        }
+        chatConversations = data || [];
+        renderChatConversationList();
+        const unread = chatConversations.reduce(
+          (n, c) => n + (Number(c.admin_unread_count) || 0),
+          0,
+        );
+        $("chatUnreadBadge").textContent = unread ? `(${unread})` : "";
+        if (
+          activeConversationId &&
+          !chatConversations.some((c) => c.id === activeConversationId)
+        ) {
+          activeConversationId = null;
+          stopAdminMessageRealtime();
+          $("chatMessages").innerHTML =
+            '<div class="empty">Select a conversation.</div>';
+        }
+      }
+      function renderChatConversationList() {
+        const q = ($("chatSearch").value || "").toLowerCase().trim();
+        const list = chatConversations.filter((c) =>
+          [c.buyer_name, c.buyer_email, c.last_message]
+            .join(" ")
+            .toLowerCase()
+            .includes(q),
+        );
+        if (!list.length) {
+          $("chatConversationList").innerHTML =
+            '<div class="empty">No conversations found yet.</div>';
+          return;
+        }
+        $("chatConversationList").innerHTML = list
+          .map(
+            (c) =>
+              `<button type="button" class="chat-conversation ${c.id === activeConversationId ? "active" : ""}" data-chat-id="${escapeChat(c.id)}"><strong>${escapeChat(c.buyer_name || c.buyer_email || "Buyer")}</strong><span class="preview">${escapeChat(c.last_message || "No messages yet")}</span><span class="chat-meta"><span>${escapeChat(c.buyer_email || "")}</span><span>${c.admin_unread_count ? `<b class="unread-dot">${Number(c.admin_unread_count)}</b>` : escapeChat(chatDate(c.last_message_at || c.created_at))}</span></span></button>`,
+          )
+          .join("");
+        document
+          .querySelectorAll("[data-chat-id]")
+          .forEach(
+            (b) => (b.onclick = () => openAdminConversation(b.dataset.chatId)),
+          );
+      }
+      $("chatSearch").addEventListener("input", renderChatConversationList);
+      $("chatRefreshBtn").onclick = loadChatConversations;
+      function stopAdminMessageRealtime() {
+        if (chatMessagesChannel) {
+          db.removeChannel(chatMessagesChannel);
+          chatMessagesChannel = null;
+        }
+      }
+      async function openAdminConversation(id) {
+        activeConversationId = id;
+        const c = chatConversations.find((x) => x.id === id);
+        if (!c) return;
+        renderChatConversationList();
+        $("chatThreadHead").innerHTML =
+          `<div><strong>${escapeChat(c.buyer_name || "Buyer")}</strong><span class="sub">${escapeChat(c.buyer_email || "")}</span></div><button type="button" id="adminDeleteChatBtn" class="btn danger">Delete chat</button>`;
+        $("adminDeleteChatBtn").onclick = () => deleteAdminConversation(id);
+        $("adminChatInput").disabled = false;
+        $("adminChatImageInput").disabled = false;
+        $("adminChatSend").disabled = false;
+        $("adminChatNotice").textContent = "";
+        await db
+          .from("chat_conversations")
+          .update({ admin_unread_count: 0 })
+          .eq("id", id);
+        await loadChatConversations();
+        await loadAdminMessages(id);
+        startAdminMessageRealtime(id);
+      }
+      async function loadAdminMessages(id) {
+        const { data, error } = await db
+          .from("chat_messages")
+          .select("*")
+          .eq("conversation_id", id)
+          .order("created_at", { ascending: true });
+        if (error) {
+          $("chatMessages").innerHTML =
+            '<div class="error">Could not load messages: ' +
+            escapeChat(error.message) +
+            "</div>";
+          return;
+        }
+        const rendered = await Promise.all(
+          (data || []).map(async (m) => {
+            let photo = "";
+            if (m.image_path) {
+              const { data: link } = await db.storage
+                .from("chat-images")
+                .createSignedUrl(m.image_path, 3600);
+              if (link?.signedUrl)
+                photo = `<a href="${escapeChat(link.signedUrl)}" target="_blank" rel="noopener"><img class="chat-photo" src="${escapeChat(link.signedUrl)}" alt="Chat image" loading="lazy"></a>`;
+              else photo = "<div>📷 Image unavailable</div>";
+            }
+            return `<div class="chat-bubble ${m.sender_role === "admin" ? "admin" : ""}">${m.message ? escapeChat(m.message).replace(/\\n/g, "<br>") : ""}${photo}<small>${m.sender_role === "admin" ? "You" : "Buyer"} · ${escapeChat(chatDate(m.created_at))}${m.sender_role === "admin" && m.read_at ? " · Read" : ""}</small></div>`;
+          }),
+        );
+        $("chatMessages").innerHTML =
+          rendered.join("") ||
+          '<div class="empty">No messages yet. Send the first reply.</div>';
+        $("chatMessages").scrollTop = $("chatMessages").scrollHeight;
+      }
+      function startAdminMessageRealtime(id) {
+        stopAdminMessageRealtime();
+        chatMessagesChannel = db
+          .channel("admin-chat-" + id)
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "chat_messages",
+              filter: "conversation_id=eq." + id,
+            },
+            async () => {
+              await loadAdminMessages(id);
+              await loadChatConversations();
+            },
+          )
+          .subscribe();
+      }
+      $("adminChatImageInput").addEventListener("change", () => {
+        adminSelectedImage = $("adminChatImageInput").files?.[0] || null;
+        const preview = $("adminChatImagePreview");
+        if (!adminSelectedImage) {
+          preview.classList.add("hidden");
+          preview.innerHTML = "";
+          return;
+        }
+        if (!adminSelectedImage.type.startsWith("image/")) {
+          toast("Please choose an image file.");
+          adminSelectedImage = null;
+          $("adminChatImageInput").value = "";
+          preview.classList.add("hidden");
+          return;
+        }
+        if (adminSelectedImage.size > 8 * 1024 * 1024) {
+          toast("Image must be under 8 MB.");
+          adminSelectedImage = null;
+          $("adminChatImageInput").value = "";
+          preview.classList.add("hidden");
+          return;
+        }
+        preview.innerHTML = `<img src="${URL.createObjectURL(adminSelectedImage)}" alt="Selected image preview"><span>${escapeChat(adminSelectedImage.name)} · ${(adminSelectedImage.size / 1024 / 1024).toFixed(2)} MB</span><button type="button" class="btn" id="removeAdminImageBtn">Remove</button>`;
+        preview.classList.remove("hidden");
+        $("removeAdminImageBtn").onclick = () => {
+          $("adminChatImageInput").value = "";
+          adminSelectedImage = null;
+          preview.classList.add("hidden");
+          preview.innerHTML = "";
+        };
+      });
+      $("adminChatForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const message = $("adminChatInput").value.trim();
+        if ((!message && !adminSelectedImage) || !activeConversationId) return;
+        const {
+          data: { user },
+        } = await db.auth.getUser();
+        if (!user) {
+          $("adminChatNotice").textContent = "Please sign in again.";
+          return;
+        }
+        $("adminChatSend").disabled = true;
+        $("adminChatImageInput").disabled = true;
+        let image_path = null;
+        if (adminSelectedImage) {
+          const ext =
+            (adminSelectedImage.name.split(".").pop() || "jpg")
+              .toLowerCase()
+              .replace(/[^a-z0-9]/g, "") || "jpg";
+          image_path = `${activeConversationId}/${crypto.randomUUID()}.${ext}`;
+          const { error: uploadError } = await db.storage
+            .from("chat-images")
+            .upload(image_path, adminSelectedImage, {
+              contentType: adminSelectedImage.type,
+              upsert: false,
+            });
+          if (uploadError) {
+            $("adminChatNotice").textContent =
+              "Image upload failed: " + uploadError.message;
+            $("adminChatSend").disabled = false;
+            $("adminChatImageInput").disabled = false;
+            return;
+          }
+        }
+        const { error } = await db
+          .from("chat_messages")
+          .insert({
+            conversation_id: activeConversationId,
+            sender_id: user.id,
+            sender_role: "admin",
+            message: message || "📷 Image",
+            image_path,
+          });
+        $("adminChatSend").disabled = false;
+        $("adminChatImageInput").disabled = false;
+        if (error) {
+          $("adminChatNotice").textContent =
+            "Could not send message: " + error.message;
+          return;
+        }
+        $("adminChatInput").value = "";
+        $("adminChatImageInput").value = "";
+        adminSelectedImage = null;
+        $("adminChatImagePreview").classList.add("hidden");
+        $("adminChatImagePreview").innerHTML = "";
+        $("adminChatNotice").textContent = "";
+        await loadAdminMessages(activeConversationId);
+        await loadChatConversations();
+      });
+
+      async function removeAdminConversationImages(conversationId) {
+        try {
+          let offset = 0;
+          const limit = 100;
+          while (true) {
+            const { data, error } = await db.storage
+              .from("chat-images")
+              .list(conversationId, { limit, offset });
+            if (error) {
+              console.warn(
+                "Could not list chat images for cleanup:",
+                error.message,
+              );
+              return false;
+            }
+            if (!data?.length) return true;
+            const paths = data
+              .filter((x) => x.name && x.id)
+              .map((x) => `${conversationId}/${x.name}`);
+            if (paths.length) {
+              const { error: removeError } = await db.storage
+                .from("chat-images")
+                .remove(paths);
+              if (removeError) {
+                console.warn(
+                  "Could not remove chat images:",
+                  removeError.message,
+                );
+                return false;
+              }
+            }
+            if (data.length < limit) return true;
+            offset += limit;
+          }
+        } catch (err) {
+          console.warn("Image cleanup failed:", err);
+          return false;
+        }
+      }
+      async function deleteAdminConversation(id) {
+        const c = chatConversations.find((x) => x.id === id);
+        if (!c) return;
+        if (
+          !window.confirm(
+            `Permanently delete the entire conversation with ${c.buyer_name || c.buyer_email || "this buyer"} and all its messages? This cannot be undone.`,
+          )
+        )
+          return;
+        const button = $("adminDeleteChatBtn");
+        if (button) button.disabled = true;
+        $("adminChatNotice").textContent = "Deleting conversation…";
+        const imagesRemoved = await removeAdminConversationImages(id);
+        const { error } = await db.rpc("delete_roadside_chat_conversation", {
+          p_conversation_id: id,
+        });
+        if (error) {
+          if (button) button.disabled = false;
+          $("adminChatNotice").textContent =
+            "Could not delete chat: " +
+            error.message +
+            (imagesRemoved
+              ? ""
+              : "\nSome image files could not be cleaned up.");
+          return;
+        }
+        stopAdminMessageRealtime();
+        activeConversationId = null;
+        adminSelectedImage = null;
+        $("chatMessages").innerHTML =
+          '<div class="empty">Conversation deleted.</div>';
+        $("chatThreadHead").innerHTML =
+          '<div><strong>Select a conversation</strong><span class="sub">Buyer messages will appear here.</span></div>';
+        $("adminChatInput").value = "";
+        $("adminChatInput").disabled = true;
+        $("adminChatImageInput").value = "";
+        $("adminChatImageInput").disabled = true;
+        $("adminChatSend").disabled = true;
+        $("adminChatImagePreview").classList.add("hidden");
+        $("adminChatImagePreview").innerHTML = "";
+        $("adminChatNotice").textContent = imagesRemoved
+          ? "Conversation and messages permanently deleted."
+          : "Conversation deleted, but some image files may remain in storage.";
+        await loadChatConversations();
+      }
+      function startAdminConversationRealtime() {
+        if (chatChannel) db.removeChannel(chatChannel);
+        chatChannel = db
+          .channel("admin-chat-conversations")
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "chat_conversations" },
+            () => loadChatConversations(),
+          )
+          .subscribe();
+      }
+
+      db.auth.onAuthStateChange(() => {});
+      updateAuth();
+
+      document.addEventListener("keydown", function (event) {
+        if (
+          event.key === "F12" ||
+          (event.ctrlKey &&
+            event.shiftKey &&
+            ["I", "J", "C"].includes(event.key.toUpperCase())) ||
+          (event.ctrlKey && event.key.toUpperCase() === "U")
+        ) {
+          event.preventDefault();
+        }
+      });
+
+      document.addEventListener("contextmenu", function (event) {
+        event.preventDefault();
+      });
+    </script>
+  </body>
+</html>
